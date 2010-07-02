@@ -9,3 +9,9 @@
 (defn db-get []
   @db)
 
+(defn db-get-first []
+  (println (> (count @db) 0))
+  (if (> (count @db) 0)
+    (@db 0)
+    nil))
+
