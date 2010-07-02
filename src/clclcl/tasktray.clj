@@ -33,9 +33,3 @@
                                            (JOptionPane/showMessageDialog nil "Eggs are not supposed to be green."))))
     (.add tray tray-icon)))
 
-;(defn tasktray-register []
-;  (let [tray (SystemTray/getSystemTray)
-;        tray-icon (TrayIcon. (ImageIO/read (.getResourceAsStream (.getClass tray) "/clclcl/clclcl.png")))]
-;    (.setToolTip tray-icon "clclcl")
-;    (.add tray tray-icon)))
-
