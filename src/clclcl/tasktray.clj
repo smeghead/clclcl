@@ -4,13 +4,19 @@
 (import (java.awt SystemTray TrayIcon PopupMenu MenuItem Image)
         (java.awt.datatransfer Clipboard DataFlavor StringSelection)
         (java.awt.event ActionListener)
-        (javax.imageio ImageIO))
+        (javax.imageio ImageIO)
+        (javax.swing JOptionPane))
+
+(use 'clclcl.clipboard)
 
 (defn create-menu [db]
-  (let [popup-menu (PopupMenu. "menu")]
-    (doto popup-menu
-      (.add (MenuItem. "aaa"))
-      (.add (MenuItem. "bbb")))
+  (let [popup-menu (PopupMenu.)]
+    (let [menu-item (MenuItem. "aaa")]
+      (.addActionListener menu-item (proxy [ActionListener] [] (actionPerformed [e] (clipboard-set "aaa"))))
+      (.add popup-menu menu-item))
+    (let [menu-item (MenuItem. "bbb")]
+      (.addActionListener menu-item (proxy [ActionListener] [] (actionPerformed [e] (clipboard-set "bbb"))))
+      (.add popup-menu menu-item))
     popup-menu))
 
 
@@ -22,7 +28,9 @@
                     (create-menu db))]
     (.addActionListener tray-icon
                         (proxy [ActionListener] []
-                          (actionPerformed [e] (println "ofu"))))
+                          (actionPerformed [e]
+                                           (println "ofu")
+                                           (JOptionPane/showMessageDialog nil "Eggs are not supposed to be green."))))
     (.add tray tray-icon)))
 
 ;(defn tasktray-register []

@@ -10,7 +10,7 @@
   (db-insert "aaa")
   (db-insert "bbb")
   (db-insert "ccc")
-  (db-insert (get-clipboard))
+  (db-insert (clipboard-get))
   (let [db (db-get)]
     (println (str "Hello, " (db 0)))
     (println (str "Hello, " (db 1)))
