@@ -1,9 +1,16 @@
 (ns clclcl.core
   (:gen-class))
 
-(import (java.awt Toolkit)
-        (java.awt.datatransfer Clipboard DataFlavor))
+(use 'clclcl.clipboard)
+(use 'clclcl.database)
 
 (defn -main [& args]
-  (let [clip (.getSystemClipboard (Toolkit/getDefaultToolkit))]
-    (println (str "Hello, " (.getData clip DataFlavor/stringFlavor)))))
+  (db-insert "aaa")
+  (db-insert "bbb")
+  (db-insert "ccc")
+  (db-insert (get-clipboard))
+  (let [db (db-get)]
+    (println (str "Hello, " (db 0)))
+    (println (str "Hello, " (db 1)))
+    (println (str "Hello, " (db 2)))
+    (println (str "Hello, " (db 3)))))
