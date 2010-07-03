@@ -4,17 +4,9 @@
 (use 'clclcl.clipboard)
 (use 'clclcl.database)
 (use 'clclcl.tasktray)
+(use 'clclcl.watcher)
 
 (defn -main [& args]
-  (println (str "Hello, " (db-get-first)))
-  (db-insert "aaa")
-  (db-insert "bbb")
-  (db-insert "ccc")
-  (db-insert (clipboard-get))
+  (watcher-register)
   (let [db (db-get)]
-    (println (str "Hello, " (db 0)))
-    (println (str "Hello, " (db 1)))
-    (println (str "Hello, " (db 2)))
-    (println (str "Hello, " (db 3)))
-    (tasktray-register db))
-  (println (str "Hello, " (db-get-first))))
+    (tasktray-register db)))

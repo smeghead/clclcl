@@ -1,17 +1,19 @@
 (ns clclcl.database
   (:gen-class))
 
-(def db (ref []))
+(def *db* (ref '()))
 
 (defn db-insert [str]
-  (dosync (ref-set db (conj @db str))))
+  (println @*db*)
+  (dosync
+    (let [db (remove #(= % str) @*db*)]
+      (ref-set *db* (conj db str)))))
 
 (defn db-get []
-  @db)
+  @*db*)
 
 (defn db-get-first []
-  (println (> (count @db) 0))
-  (if (> (count @db) 0)
-    (@db 0)
+  (if (> (count @*db*) 0)
+    (@*db* 0)
     nil))
 
