@@ -7,7 +7,8 @@
 (defn clipboard-get []
   (let [clip (.getSystemClipboard (Toolkit/getDefaultToolkit))]
     (if (.isDataFlavorAvailable clip DataFlavor/stringFlavor)
-      (try (.getData clip DataFlavor/stringFlavor)))))
+      (try (.getData clip DataFlavor/stringFlavor)
+        (catch UnsupportedFlavorException _ nil)))))
 
 (defn clipboard-set [str]
   (let [selection (StringSelection. str)
