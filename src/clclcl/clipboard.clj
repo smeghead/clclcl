@@ -2,7 +2,7 @@
   (:gen-class))
 
 (import (java.awt Toolkit)
-        (java.awt.datatransfer Clipboard DataFlavor StringSelection))
+        (java.awt.datatransfer Clipboard DataFlavor StringSelection UnsupportedFlavorException))
 
 (defn clipboard-get []
   (let [clip (.getSystemClipboard (Toolkit/getDefaultToolkit))]

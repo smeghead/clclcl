@@ -1,7 +1,7 @@
 (ns clclcl.tasktray
   (:gen-class))
 
-(import (java.awt SystemTray TrayIcon PopupMenu MenuItem Image)
+(import (java.awt SystemTray TrayIcon PopupMenu MenuItem Image Font)
         (java.awt.datatransfer Clipboard DataFlavor StringSelection)
         (java.awt.event ActionListener MouseListener)
         (javax.imageio ImageIO)
@@ -23,9 +23,11 @@
               menu-item (MenuItem. (if (> (count entry) 20)
                                      (subs entry 0 20)
                                      entry))]
-          (.addActionListener menu-item
-                              (proxy [ActionListener] []
-                                (actionPerformed [e] (clipboard-set entry))))
+          (doto menu-item
+            (.addActionListener 
+              (proxy [ActionListener] []
+                (actionPerformed [e] (clipboard-set entry))))
+            (.setFont (Font. "VL Pゴシック" Font/PLAIN 14)))
           (.add popup-menu menu-item)
           (recur (rest entries)))))
     popup-menu))

@@ -1,2 +1,5 @@
 #!/bin/sh
+#JAVA_OPTS="-Dawt.useSystemAAFontSettings=on"
+#export JAVA_OPTS
+#java -Dawt.useSystemAAFontSettings=on -jar clclcl-standalone.jar
 java -jar clclcl-standalone.jar
