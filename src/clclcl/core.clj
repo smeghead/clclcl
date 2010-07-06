@@ -7,6 +7,7 @@
 (use 'clclcl.watcher)
 
 (defn -main [& args]
+  (println (db-select))
   (watcher-register)
   (let [db (db-get)]
     (tasktray-register db)))
