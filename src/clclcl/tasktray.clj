@@ -12,36 +12,38 @@
 (defn plus? [x]
   (> x 0))
 
+(defn format-entry-for-item [entry]
+  (if (> (count entry) 20)
+    (subs entry 0 20)
+    entry))
+
 (defn create-menu [db]
   (let [popup-menu (PopupMenu.)]
     (loop [entries (take 20 db)]
       (if (plus? (count entries))
         (let [entry (first entries) 
-              menu-item (MenuItem. (if (> (count entry) 20)
-                                     (subs entry 0 20)
-                                     entry))]
+              menu-item (MenuItem. (format-entry-for-item (entry :data)))]
           (doto menu-item
             (.addActionListener 
               (proxy [ActionListener] []
-                (actionPerformed [e] (clipboard-set entry))))
+                (actionPerformed [e] (clipboard-set (entry :data)))))
             (.setFont (Font. "VL Pゴシック" Font/PLAIN 14)))
           (.add popup-menu menu-item)
           (recur (rest entries)))))
     popup-menu))
 
 (defn tasktray-register [db]
-  (let [tray (SystemTray/getSystemTray)
-        tray-icon (TrayIcon.
-                    (ImageIO/read (.getResourceAsStream (.getClass tray) "/clclcl/clclcl.png"))
-                    "clclcl"
-                    (create-menu db))]
-    (dosync (ref-set *tray-icon* tray-icon))
-    (.addActionListener tray-icon
+  (let [tray (SystemTray/getSystemTray)]
+    (dosync (ref-set *tray-icon* (TrayIcon.
+                                   (ImageIO/read (.getResourceAsStream (.getClass tray) "/clclcl/clclcl.png"))
+                                   "clclcl"
+                                   (create-menu db))))
+    (.addActionListener @*tray-icon*
                         (proxy [ActionListener] []
                           (actionPerformed [e]
                                            (JOptionPane/showMessageDialog nil "I will exit.")
                                            (java.lang.System/exit 0))))
-    (.add tray tray-icon)))
+    (.add tray @*tray-icon*)))
 
 (defn tasktray-update-menu []
   (let [db (db-get)]

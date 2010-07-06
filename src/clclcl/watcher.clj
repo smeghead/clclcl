@@ -7,9 +7,10 @@
 (def *watcher-thread* (ref nil))
 
 (defn watcher-loop []
-  (let [str (clipboard-get)]
-    (if str
-      (db-insert str)))
+  (let [s (clipboard-get)]
+    (println (str "[" s "]"))
+    (if s
+      (db-insert s)))
   (tasktray-update-menu)
   (Thread/sleep 3000)
   (recur))

@@ -2,6 +2,7 @@
 
 	* move :import and :use to :ns.
 	* use Derby. add Derby library.
+	* save clipboard data to Derby database.
 
 2010-07-05  smeghead <smeghead@users.sourceforge.jp>
 
