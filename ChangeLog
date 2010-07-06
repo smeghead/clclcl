@@ -1,0 +1,7 @@
+2010-07-06  smeghead <smeghead@users.sourceforge.jp>
+
+	* move :import and :use to :ns.
+
+2010-07-05  smeghead <smeghead@users.sourceforge.jp>
+
+	* alpha release.

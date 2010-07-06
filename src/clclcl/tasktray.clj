@@ -1,14 +1,11 @@
 (ns clclcl.tasktray
-  (:gen-class))
-
-(import (java.awt SystemTray TrayIcon PopupMenu MenuItem Image Font)
-        (java.awt.datatransfer Clipboard DataFlavor StringSelection)
-        (java.awt.event ActionListener MouseListener)
-        (javax.imageio ImageIO)
-        (javax.swing JOptionPane))
-
-(use 'clclcl.clipboard)
-(use 'clclcl.database)
+  (:gen-class)
+  (:use clclcl.clipboard clclcl.database)
+  (:import (java.awt SystemTray TrayIcon PopupMenu MenuItem Image Font)
+     (java.awt.datatransfer Clipboard DataFlavor StringSelection)
+     (java.awt.event ActionListener MouseListener)
+     (javax.imageio ImageIO)
+     (javax.swing JOptionPane)))
 
 (def *tray-icon* (ref nil))
 

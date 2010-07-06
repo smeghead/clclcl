@@ -1,12 +1,8 @@
 (ns clclcl.watcher
-  (:gen-class))
-
-(import (java.awt Toolkit)
-        (java.awt.datatransfer  FlavorListener))
-
-(use 'clclcl.clipboard)
-(use 'clclcl.database)
-(use 'clclcl.tasktray)
+  (:gen-class)
+  (:use clclcl.clipboard clclcl.database clclcl.tasktray)
+  (:import (java.awt Toolkit)
+     (java.awt.datatransfer  FlavorListener)))
 
 (def *watcher-thread* (ref nil))
 
