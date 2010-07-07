@@ -1,6 +1,8 @@
 2010-07-07  smeghead <smeghead@users.sourceforge.jp>
 
 	* when execute sql, use prepared statement and prevents sql injection.
+	* use swing JPopupMenu. menu could be look like smart.
+	* add register-menu-item macro.
 
 2010-07-06  smeghead <smeghead@users.sourceforge.jp>
 

@@ -1,6 +1,6 @@
 (ns clclcl.watcher
   (:gen-class)
-  (:use clclcl.clipboard clclcl.database clclcl.tasktray)
+  (:use clclcl.clipboard clclcl.history clclcl.tasktray clclcl.utils)
   (:import (java.awt Toolkit)
      (java.awt.datatransfer  FlavorListener)))
 
@@ -8,10 +8,8 @@
 
 (defn watcher-loop []
   (let [s (clipboard-get)]
-    (println (str "[" s "]"))
-    (if s
-      (db-insert s)))
-  (tasktray-update-menu)
+    (if (and s (plus? (count s)))
+      (history-insert s)))
   (Thread/sleep 3000)
   (recur))
 

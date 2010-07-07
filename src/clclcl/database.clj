@@ -8,13 +8,6 @@
 (def *create-table-sql-of*
   {:clipboard-data "create table clipboard_data(id int not null generated always as identity constraint clipboard_data_pk primary key, data_type varchar(36), data varchar(30000))"})
 
-
-;(defn db-get-first []
-;  (if (> (count @*db*) 0)
-;    (@*db* 0)
-;    nil))
-
-
 (defn db-init []
   (.newInstance (Class/forName "org.apache.derby.jdbc.EmbeddedDriver"))
   (let [dir (File. *database-path*)]
@@ -42,7 +35,6 @@
         (.close state)
         (.close conn)))
 
-;(defmacro with-result-set [rs sql params body]
 (defn db-select [sql params]
   (let [conn (DriverManager/getConnection (str "jdbc:derby:" *database-path*))
         state (db-setup-params (.prepareStatement conn sql) params)
@@ -52,10 +44,3 @@
     (.close state)
     (.close conn)
     results))
-
-(defn db-insert [s]
-  (db-query (str "delete from clipboard_data where data = ?") [s])
-  (db-query (str "insert into clipboard_data(data) values (?)") [s]))
-
-(defn db-get []
-  (db-select "select * from clipboard_data order by id desc fetch first 20 rows only" nil))
