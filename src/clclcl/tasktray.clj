@@ -1,6 +1,6 @@
 (ns clclcl.tasktray
   (:gen-class)
-  (:use clclcl.clipboard clclcl.database)
+  (:use clclcl.clipboard clclcl.database clclcl.utils)
   (:import (java.awt SystemTray TrayIcon PopupMenu MenuItem Image Font)
      (java.awt.datatransfer Clipboard DataFlavor StringSelection)
      (java.awt.event ActionListener MouseListener)
@@ -8,9 +8,6 @@
      (javax.swing JOptionPane)))
 
 (def *tray-icon* (ref nil))
-
-(defn plus? [x]
-  (> x 0))
 
 (defn format-entry-for-item [entry]
   (if (> (count entry) 20)

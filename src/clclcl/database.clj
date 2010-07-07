@@ -1,5 +1,6 @@
 (ns clclcl.database
   (:gen-class)
+  (:use clclcl.utils)
   (:import (java.sql Connection DriverManager)
      (java.io File)))
 
@@ -19,23 +20,33 @@
   (let [dir (File. *database-path*)]
     (if (not (.exists dir))
       (let [conn (DriverManager/getConnection (str "jdbc:derby:" *database-path* ";create=true"))
-            state (.createStatement conn)]
-        (.execute state (*create-table-sql-of* :clipboard-data))
+            state (.prepareStatement conn (*create-table-sql-of* :clipboard-data))]
+        (.execute state)
         (.close state)
         (.close conn)))))
 
+(defn db-setup-params [state params]
+  (if params
+    (loop [ps params
+           i 1]
+      (if (plus? (count ps))
+        (let [p (first ps)]
+          (.setObject state i p)
+          (recur (rest ps) (inc i))))))
+  state)
+
 (defn db-query [sql params]
   (let [conn (DriverManager/getConnection (str "jdbc:derby:" *database-path*))
-            state (.createStatement conn)]
-        (.execute state sql)
+            state (db-setup-params (.prepareStatement conn sql) params)]
+        (.execute state)
         (.close state)
         (.close conn)))
 
 ;(defmacro with-result-set [rs sql params body]
 (defn db-select [sql params]
   (let [conn (DriverManager/getConnection (str "jdbc:derby:" *database-path*))
-        state (.createStatement conn)
-        rs (.executeQuery state "select * from clipboard_data")
+        state (db-setup-params (.prepareStatement conn sql) params)
+        rs (.executeQuery state)
         results (doall (resultset-seq rs))]
     (.close rs)
     (.close state)
@@ -43,8 +54,8 @@
     results))
 
 (defn db-insert [s]
-  (db-query (str "delete from clipboard_data where data = '" s "'") nil)
-  (db-query (str "insert into clipboard_data(data) values ('" s "')") nil))
+  (db-query (str "delete from clipboard_data where data = ?") [s])
+  (db-query (str "insert into clipboard_data(data) values (?)") [s]))
 
 (defn db-get []
-  (db-select "select * from clipboard_data order by id desc limit 20 offset 0" nil))
+  (db-select "select * from clipboard_data order by id desc fetch first 20 rows only" nil))

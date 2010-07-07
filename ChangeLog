@@ -1,3 +1,7 @@
+2010-07-07  smeghead <smeghead@users.sourceforge.jp>
+
+	* when execute sql, use prepared statement and prevents sql injection.
+
 2010-07-06  smeghead <smeghead@users.sourceforge.jp>
 
 	* move :import and :use to :ns.
