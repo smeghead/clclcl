@@ -48,7 +48,7 @@
     (.setVisible true))
   (let [popup-menu (JPopupMenu.)]
     (loop [entries (history-get)]
-      (if (plus? (count entries))
+      (if (not (empty? entries))
         (let [entry (first entries) 
               menu-item (JMenuItem. (format-entry-for-item (entry :data)))]
           (register-menu-item [menu-item] (clipboard-set (entry :data)))

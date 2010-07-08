@@ -1,0 +1,2 @@
+#!/bin/sh
+java -classpath clclcl-standalone.jar org.apache.derby.tools.ij $@

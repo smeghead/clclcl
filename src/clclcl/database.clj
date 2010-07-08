@@ -6,7 +6,7 @@
 
 (def *database-path* (str (System/getenv "HOME") "/.clclcl/clclcl"))
 (def *create-table-sql-of*
-  {:clipboard-data "create table clipboard_data(id int not null generated always as identity constraint clipboard_data_pk primary key, data_type varchar(36), data varchar(30000))"})
+  {:clipboard-data "create table clipboard_data(id bigint not null generated always as identity constraint clipboard_data_pk primary key, data_type varchar(36), data varchar(30000))"})
 
 (defn db-init []
   (.newInstance (Class/forName "org.apache.derby.jdbc.EmbeddedDriver"))
@@ -22,7 +22,7 @@
   (if params
     (loop [ps params
            i 1]
-      (if (plus? (count ps))
+      (if (not (empty? ps))
         (let [p (first ps)]
           (.setObject state i p)
           (recur (rest ps) (inc i))))))

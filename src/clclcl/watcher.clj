@@ -8,7 +8,7 @@
 
 (defn watcher-loop []
   (let [s (clipboard-get)]
-    (if (and s (plus? (count s)))
+    (if (and s (not (empty? s)))
       (history-insert s)))
   (Thread/sleep 3000)
   (recur))
