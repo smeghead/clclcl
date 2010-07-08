@@ -35,8 +35,7 @@
         e (gensym)]
     `(doto ~menu-item
        (.addActionListener (proxy [ActionListener] []
-                             (actionPerformed [~e]
-                                              ~@body)))
+                             (actionPerformed [~e] ~@body)))
        (.setFont (Font. "VL Pゴシック" Font/PLAIN 14)))))
 
 (defn display-menu [x y]
@@ -58,6 +57,7 @@
     (let [menu-item (JMenuItem. "exit")]
       (register-menu-item [menu-item] (java.lang.System/exit 0))
       (.add popup-menu menu-item))
+    (.requestFocusInWindow popup-menu)
     (.show popup-menu (.getComponent @*frame* 0) 0 0)))
 
 (defn tasktray-register []
@@ -69,6 +69,5 @@
                          (mouseReleased [e])
                          (mouseEntered [e])
                          (mouseExited [e])
-                         (mouseClicked [e]
-                                       (display-menu (.getXOnScreen e) (.getYOnScreen e)))))
+                         (mouseClicked [e] (display-menu (.getXOnScreen e) (.getYOnScreen e)))))
     (.add tray @*tray-icon*)))

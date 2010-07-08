@@ -16,9 +16,7 @@
 (defn watcher-register []
   (let [clip (.getSystemClipboard (Toolkit/getDefaultToolkit))]
   (dosync (ref-set *watcher-thread* (proxy [Thread] []
-                                      (start []
-                                             (proxy-super start))
-                                      (run []
-                                           (watcher-loop)))))
+                                      (start [] (proxy-super start))
+                                      (run [] (watcher-loop)))))
   (.start @*watcher-thread*)))
 
