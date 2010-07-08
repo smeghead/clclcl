@@ -28,19 +28,26 @@
           (recur (rest ps) (inc i))))))
   state)
 
+(defmacro with-statement [args & body]
+  (let [[state sql params] args
+        database-path *database-path*
+        conn (gensym)
+        result (gensym)]
+    `(let [~conn (DriverManager/getConnection (str "jdbc:derby:" ~database-path))
+           ~state (db-setup-params (.prepareStatement ~conn ~sql) ~params)
+           ~result (let [] 
+                     ~@body)]
+       (.close ~state)
+       (.close ~conn)
+       ~result)))
+
 (defn db-query [sql params]
-  (let [conn (DriverManager/getConnection (str "jdbc:derby:" *database-path*))
-            state (db-setup-params (.prepareStatement conn sql) params)]
-        (.execute state)
-        (.close state)
-        (.close conn)))
+  (with-statement [state sql params]
+                  (.execute state)))
 
 (defn db-select [sql params]
-  (let [conn (DriverManager/getConnection (str "jdbc:derby:" *database-path*))
-        state (db-setup-params (.prepareStatement conn sql) params)
-        rs (.executeQuery state)
-        results (doall (resultset-seq rs))]
-    (.close rs)
-    (.close state)
-    (.close conn)
-    results))
+  (with-statement [state sql params]
+                  (let [rs (.executeQuery state)
+                        results (doall (resultset-seq rs))]
+                    (.close rs)
+                    results)))

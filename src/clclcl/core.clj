@@ -1,11 +1,6 @@
 (ns clclcl.core
-  (:gen-class))
-
-(use 'clclcl.clipboard)
-(use 'clclcl.database)
-(use 'clclcl.history)
-(use 'clclcl.tasktray)
-(use 'clclcl.watcher)
+  (:gen-class)
+  (:use clclcl.clipboard clclcl.database clclcl.history clclcl.tasktray clclcl.watcher))
 
 (defn -main [& args]
   (db-init)

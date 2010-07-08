@@ -1,3 +1,7 @@
+2010-07-08  smeghead <smeghead@users.sourceforge.jp>
+
+	* modify database access by with-statement macro.
+
 2010-07-07  smeghead <smeghead@users.sourceforge.jp>
 
 	* when execute sql, use prepared statement and prevents sql injection.
