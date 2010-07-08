@@ -2,6 +2,7 @@
 
 	* modify database access by with-statement macro.
 	* add derby tools.
+	* when program is exit, execute derby shutdown.
 
 2010-07-07  smeghead <smeghead@users.sourceforge.jp>
 

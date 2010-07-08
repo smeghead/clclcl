@@ -1,6 +1,6 @@
 (ns clclcl.tasktray
   (:gen-class)
-  (:use clclcl.clipboard clclcl.history clclcl.utils)
+  (:use clclcl.database clclcl.clipboard clclcl.history clclcl.utils)
   (:import (java.awt SystemTray TrayIcon Image Font)
      (java.awt.datatransfer Clipboard DataFlavor StringSelection)
      (java.awt.event ActionListener MouseListener WindowFocusListener)
@@ -55,7 +55,9 @@
           (recur (rest entries)))))
     (.addSeparator popup-menu)
     (let [menu-item (JMenuItem. "exit")]
-      (register-menu-item [menu-item] (java.lang.System/exit 0))
+      (register-menu-item [menu-item]
+                          (db-shutdown)
+                          (java.lang.System/exit 0))
       (.add popup-menu menu-item))
     (.requestFocusInWindow popup-menu)
     (.show popup-menu (.getComponent @*frame* 0) 0 0)))

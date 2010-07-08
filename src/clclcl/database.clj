@@ -1,7 +1,7 @@
 (ns clclcl.database
   (:gen-class)
   (:use clclcl.utils)
-  (:import (java.sql Connection DriverManager)
+  (:import (java.sql Connection DriverManager SQLException)
      (java.io File)))
 
 (def *database-path* (str (System/getenv "HOME") "/.clclcl/clclcl"))
@@ -38,6 +38,12 @@
     (if (not (.exists dir))
       (with-statement [state (*create-table-sql-of* :clipboard-data) nil ";create=true"]
                       (.execute state)))))
+
+(defn db-shutdown []
+  (try
+    (with-statement [state "" nil ";shutdown=true"])
+    (catch SQLException e
+      (println "derby shutdown."))))
 
 (defn db-query [sql params]
   (with-statement [state sql params]
