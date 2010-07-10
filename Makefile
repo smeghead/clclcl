@@ -1,4 +1,4 @@
-VERSION=0.0.2-alpha
+VERSION=0.0.3-alpha
 DIST_DIR=dist/clclcl-${VERSION}
 
 default:
@@ -6,7 +6,7 @@ default:
 
 dist: default
 	mkdir -p ${DIST_DIR}
-	cp README clclcl clclcl.bat clclcl-standalone.jar ${DIST_DIR}
+	cp ChangeLog README clclcl clclcl.bat clclcl-standalone.jar ${DIST_DIR}
 	chmod +x ${DIST_DIR}/clclcl
 	cd dist && zip -r clclcl-${VERSION}.zip clclcl-${VERSION}
 

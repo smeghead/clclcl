@@ -1,1 +1,1 @@
-java -Dawt.useSystemAAFontSettings=on -jar clclcl-standalone.jar
+java -Dawt.useSystemAAFontSettings=on -jar %~dp0\clclcl-standalone.jar
