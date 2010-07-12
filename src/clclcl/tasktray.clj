@@ -1,11 +1,12 @@
 (ns clclcl.tasktray
   (:gen-class)
-  (:use clclcl.database clclcl.clipboard clclcl.history clclcl.utils)
+  (:use clojure.contrib.logging clclcl.database clclcl.clipboard clclcl.history clclcl.utils)
   (:import (java.awt SystemTray TrayIcon Image Font)
      (java.awt.datatransfer Clipboard DataFlavor StringSelection)
      (java.awt.event ActionListener MouseListener WindowFocusListener)
      (javax.imageio ImageIO)
      (javax.swing JOptionPane JFrame JPopupMenu JMenuItem)))
+(impl-get-log (str *ns*))
 
 (def *tray-icon* (ref nil))
 
@@ -72,4 +73,5 @@
                          (mouseEntered [e])
                          (mouseExited [e])
                          (mouseClicked [e] (display-menu (.getXOnScreen e) (.getYOnScreen e)))))
-    (.add tray @*tray-icon*)))
+    (.add tray @*tray-icon*)
+    (trace "tasktray-register.")))

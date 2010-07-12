@@ -1,8 +1,9 @@
 (ns clclcl.database
   (:gen-class)
-  (:use clclcl.utils)
+  (:use clojure.contrib.logging clclcl.utils)
   (:import (java.sql Connection DriverManager SQLException)
      (java.io File)))
+(impl-get-log (str *ns*))
 
 (def *database-path* (str (System/getenv "HOME") "/.clclcl/clclcl"))
 (def *create-table-sql-of*
