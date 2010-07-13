@@ -16,7 +16,7 @@
                             (isLoggable [record]
                                         (.startsWith (.getLoggerName record) "clclcl"))))
       (doto logger
-        (.setLevel Level/ALL)
+        (.setLevel Level/CONFIG)
         (.addHandler handler)))))
 
 (setup-logger)
