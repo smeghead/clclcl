@@ -1,3 +1,7 @@
+2010-07-14  smeghead <smeghead@users.sourceforge.jp>
+
+	* add logging.properties, and remove logging.clj.
+
 2010-07-13  smeghead <smeghead@users.sourceforge.jp>
 
 	* add logging.

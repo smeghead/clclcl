@@ -9,10 +9,11 @@
   (let [clip (.getSystemClipboard (Toolkit/getDefaultToolkit))]
     (if (.isDataFlavorAvailable clip DataFlavor/stringFlavor)
       (try (.getData clip DataFlavor/stringFlavor)
-        (catch UnsupportedFlavorException _ nil)))))
+        (catch UnsupportedFlavorException e 
+          (error "failed to get data from clipboard." e))))))
 
 (defn clipboard-set [s]
-  (trace (str "str:" s))
+  (info (str "str:" s))
   (let [selection (StringSelection. s)
         clip (.getSystemClipboard (Toolkit/getDefaultToolkit))]
     (.setContents clip selection nil)))
