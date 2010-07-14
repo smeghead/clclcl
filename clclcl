@@ -1,4 +1,3 @@
 #!/bin/sh
 CLCLCL_JAR=$(dirname $0)/clclcl-standalone.jar
-echo java -Djava.util.logging.config.file=$(dirname $0)/logging.properties -Dawt.useSystemAAFontSettings=on -jar ${CLCLCL_JAR}
 java -Djava.util.logging.config.file=$(dirname $0)/logging.properties -Dawt.useSystemAAFontSettings=on -jar ${CLCLCL_JAR}
