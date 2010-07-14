@@ -2,14 +2,14 @@
   (:gen-class)
   (:use clojure.contrib.logging)
   (:import (java.awt Toolkit)
-        (java.awt.datatransfer Clipboard DataFlavor StringSelection UnsupportedFlavorException)))
+        (java.awt.datatransfer Clipboard DataFlavor StringSelection)))
 (impl-get-log (str *ns*))
 
 (defn clipboard-get []
   (let [clip (.getSystemClipboard (Toolkit/getDefaultToolkit))]
     (if (.isDataFlavorAvailable clip DataFlavor/stringFlavor)
       (try (.getData clip DataFlavor/stringFlavor)
-        (catch UnsupportedFlavorException e 
+        (catch Exception e 
           (error "failed to get data from clipboard." e))))))
 
 (defn clipboard-set [s]
