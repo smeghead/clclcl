@@ -14,8 +14,18 @@
   (ImageIO/read (.getResourceAsStream (.getClass "") "/clclcl/clclcl.png")))
 
 (defn format-entry-for-item [entry]
-  (if (> (count entry) 20)
-    (subs entry 0 20)
+  (if (> (reduce + (map #(min 2 (count (.getBytes (str %)))) entry)) 40)
+    (loop [chars (map #(list (min 2 (count (.getBytes (str %)))) %) entry)
+           cnt 0
+           acc '()]
+      (let [letter-count (first (first chars))
+            letter (second (first chars))]
+        (debug letter-count)
+        (debug letter)
+        (debug acc)
+        (if (> cnt 40)
+          (apply str (reverse (conj acc "...")))
+          (recur (rest chars) (+ cnt letter-count) (conj acc letter)))))
     entry))
 
 (def *frame* (ref nil))
