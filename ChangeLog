@@ -1,3 +1,7 @@
+2010-08-12  smeghead <smeghead@users.sourceforge.jp>
+
+	* use clojure.contrib.sql. instead of directly Java.
+
 2010-07-15  smeghead <smeghead@users.sourceforge.jp>
 
 	* added to setting menu item's length. single byte and multibyte
