@@ -1,3 +1,7 @@
+2010-08-17  smeghead <smeghead@users.sourceforge.jp>
+
+	* fixed create-table bug.
+
 2010-08-12  smeghead <smeghead@users.sourceforge.jp>
 
 	* use clojure.contrib.sql. instead of directly Java.

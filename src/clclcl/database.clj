@@ -17,9 +17,9 @@
     (if (not (.exists dir))
       (with-connection (assoc *db* :create true)
                        (create-table :clipboard_data
-                                     [:id :big-int "not null generated always as identity constraint clipboard_data_pk primary key"]
+                                     [:id :int "not null generated always as identity constraint clipboard_data_pk primary key"]
                                      [:data_type "varchar(36)"]
-                                     [:data "varchar(30000))"])))))
+                                     [:data "varchar(30000)"])))))
 
 (defn db-shutdown []
   (try
