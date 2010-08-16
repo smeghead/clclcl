@@ -1,6 +1,11 @@
 2010-08-17  smeghead <smeghead@users.sourceforge.jp>
 
 	* fixed create-table bug.
+	* added user settings file(./clclcl/clclcl.conf). setting context is
+	below.
+	  {:list-max 30              ; tasktray menu items count
+	    :font-name "VL Pゴシック" ; tasktray menu font name
+	    :watch-interval 3000}     ; watcher interval milliseconds.
 
 2010-08-12  smeghead <smeghead@users.sourceforge.jp>
 

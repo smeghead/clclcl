@@ -1,6 +1,6 @@
 (ns clclcl.database
   (:gen-class)
-  (:use clojure.contrib.logging clojure.contrib.sql clclcl.utils)
+  (:use clojure.contrib.logging clojure.contrib.sql clclcl.options clclcl.utils)
   (:import [org.apache.derby.jdbc EmbeddedDriver]
      [java.sql SQLException]
      [java.io File]))
@@ -37,6 +37,6 @@
 
 (defn db-select-clipboard-data [{list-max :list-max}]
   (with-connection *db*
-                   ;bind parameter(?) got syntax error. so use String.format.
+                   ;this part(fetch first ?) may be not supported bind parameter(?). so use String.format.
                    (with-query-results rs [(format "select * from clipboard_data order by id desc fetch first %d rows only" list-max)]
                                        (doall rs))))

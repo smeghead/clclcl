@@ -1,6 +1,6 @@
 (ns clclcl.watcher
   (:gen-class)
-  (:use clojure.contrib.logging clclcl.clipboard clclcl.history clclcl.tasktray clclcl.utils)
+  (:use clojure.contrib.logging clclcl.options clclcl.clipboard clclcl.history clclcl.tasktray clclcl.utils)
   (:import (java.awt Toolkit)
      (java.awt.datatransfer  FlavorListener)))
 (impl-get-log (str *ns*))
@@ -14,7 +14,7 @@
         (history-insert s)))
     (catch Exception e
       (error "watcher-loop failed." e)))
-  (Thread/sleep 3000)
+  (Thread/sleep (:watch-interval (get-options)))
   (recur))
 
 (defn watcher-register []

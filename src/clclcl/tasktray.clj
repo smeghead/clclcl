@@ -1,6 +1,6 @@
 (ns clclcl.tasktray
   (:gen-class)
-  (:use clojure.contrib.logging clclcl.database clclcl.clipboard clclcl.history clclcl.utils)
+  (:use clojure.contrib.logging clclcl.options clclcl.database clclcl.clipboard clclcl.history clclcl.utils)
   (:import (java.awt SystemTray TrayIcon Image Font)
      (java.awt.datatransfer Clipboard DataFlavor StringSelection)
      (java.awt.event ActionListener MouseListener WindowFocusListener)
@@ -47,7 +47,7 @@
     `(doto ~menu-item
        (.addActionListener (proxy [ActionListener] []
                              (actionPerformed [~e] ~@body)))
-       (.setFont (Font. "VL Pゴシック" Font/PLAIN 14)))))
+       (.setFont (Font. (:font-name (get-options)) Font/PLAIN 14)))))
 
 (defn display-menu [x y]
   (setup-frame)
