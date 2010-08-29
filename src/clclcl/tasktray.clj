@@ -1,6 +1,6 @@
 (ns clclcl.tasktray
   (:gen-class)
-  (:use clojure.contrib.logging clclcl.options clclcl.database clclcl.clipboard clclcl.history clclcl.utils)
+  (:use clojure.contrib.logging clclcl.options clclcl.database clclcl.clipboard clclcl.history clclcl.utils clclcl.templates)
   (:import (java.awt SystemTray TrayIcon Image Font)
      (java.awt.datatransfer Clipboard DataFlavor StringSelection)
      (java.awt.event ActionListener MouseListener WindowFocusListener)
@@ -49,6 +49,18 @@
                              (actionPerformed [~e] ~@body)))
        (.setFont (Font. (:font-name (get-options)) Font/PLAIN 14)))))
 
+(defn register-menu-items [entries popup-menu]
+  (loop [items (map
+                 (fn [e] (if (map? e) (e :data) e)) ; if the element is map, retreive :data.
+                 entries)]
+    (debug (first items))
+    (if (not (empty? items))
+      (let [item (first items) 
+            menu-item (JMenuItem. (format-entry-for-item item))]
+        (register-menu-item [menu-item] (clipboard-set item))
+        (.add popup-menu menu-item)
+        (recur (rest items))))))
+
 (defn display-menu [x y]
   (setup-frame)
   (doto @*frame*
@@ -57,14 +69,18 @@
     (.setBounds x y 0 0)
     (.setVisible true))
   (let [popup-menu (JPopupMenu.)]
-    (loop [entries (history-get)]
-      (if (not (empty? entries))
-        (let [entry (first entries) 
-              menu-item (JMenuItem. (format-entry-for-item (entry :data)))]
-          (register-menu-item [menu-item] (clipboard-set (entry :data)))
-          (.add popup-menu menu-item)
-          (recur (rest entries)))))
+    ;history
+    (register-menu-items (history-get) popup-menu)
     (.addSeparator popup-menu)
+    ;templates
+    (let [templates (templates-get)]
+      (if (empty? templates)
+        (let [menu-item (JMenuItem. "(Templates is empty)")]
+          (register-menu-item [menu-item])
+          (.add popup-menu menu-item))
+        (register-menu-items (templates-get) popup-menu)))
+    (.addSeparator popup-menu)
+    ;exit
     (let [menu-item (JMenuItem. "exit")]
       (register-menu-item [menu-item]
                           (db-shutdown)

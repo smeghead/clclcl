@@ -1,6 +1,6 @@
 (ns clclcl.database
   (:gen-class)
-  (:use clojure.contrib.logging clojure.contrib.sql clclcl.options clclcl.utils)
+  (:use clojure.contrib.logging clojure.contrib.sql clclcl.utils)
   (:import [org.apache.derby.jdbc EmbeddedDriver]
      [java.sql SQLException]
      [java.io File]))
