@@ -1,5 +1,9 @@
 2010-08-30  smeghead <smeghead@users.sourceforge.jp>
 
+	* add file checks. (user setting file, user templates file)
+
+2010-08-30  smeghead <smeghead@users.sourceforge.jp>
+
 	* add templates menu which is difined in ~/.clclcl/templates.clj file.
 
 2010-08-17  smeghead <smeghead@users.sourceforge.jp>
