@@ -9,9 +9,18 @@
 
 (defn templates-get []
   (try
-    (if (not (.. (File. *user-templates-file*) exists))
+    (if-not (.. (File. *user-templates-file*) exists)
       (with-out-writer *user-templates-file* (prn [])))
-    (read (java.io.PushbackReader. (reader *user-templates-file*)))
+    (map (fn [x] (if (map? x) x {:name x :data x}))
+         (read (java.io.PushbackReader. (reader *user-templates-file*))))
     (catch Exception e
       (error "failed to read user templates file." e)
       [])))
+
+(defn templates-match [s]
+  (some (fn [x]
+          (= s (if (map? x)
+                 (x :data)
+                 x)))
+        (templates-get)))
+

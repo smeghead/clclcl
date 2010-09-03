@@ -2,7 +2,11 @@ VERSION=0.0.6-alpha
 DIST_DIR=dist/clclcl-${VERSION}
 
 default:
+	mv resources/.svn resources/svn
+	mv resources/clclcl/.svn resources/clclcl/svn
 	lein uberjar
+	mv resources/svn resources/.svn
+	mv resources/clclcl/svn resources/clclcl/.svn
 
 dist: default
 	mkdir -p ${DIST_DIR}

@@ -14,7 +14,7 @@
 
 (defn clipboard-set [s]
   (info (str "str:" s))
-  (let [selection (StringSelection. s)
-        clip (.getSystemClipboard (Toolkit/getDefaultToolkit))]
-    (.setContents clip selection nil)))
+    (let [selection (StringSelection. s)
+          clip (.getSystemClipboard (Toolkit/getDefaultToolkit))]
+      (.setContents clip selection nil)))
 

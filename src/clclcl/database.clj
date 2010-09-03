@@ -14,7 +14,7 @@
 (defn db-init []
   (.newInstance (Class/forName "org.apache.derby.jdbc.EmbeddedDriver"))
   (let [dir (File. *database-path*)]
-    (if (not (.exists dir))
+    (if-not (.exists dir)
       (with-connection (assoc *db* :create true)
                        (create-table :clipboard_data
                                      [:id :int "not null generated always as identity constraint clipboard_data_pk primary key"]

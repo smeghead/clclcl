@@ -5,7 +5,7 @@
      (java.awt.datatransfer Clipboard DataFlavor StringSelection)
      (java.awt.event ActionListener MouseListener WindowFocusListener)
      (javax.imageio ImageIO)
-     (javax.swing JOptionPane JFrame JPopupMenu JMenuItem)))
+     (javax.swing JOptionPane JFrame JPopupMenu JMenuItem JMenu)))
 (impl-get-log (str *ns*))
 
 (def *tray-icon* (ref nil))
@@ -47,17 +47,15 @@
     `(doto ~menu-item
        (.addActionListener (proxy [ActionListener] []
                              (actionPerformed [~e] ~@body)))
-       (.setFont (Font. (:font-name (get-options)) Font/PLAIN 14)))))
+       (.setFont (Font. (:font-name (get-options)) Font/PLAIN (:font-size (get-options)))))))
 
 (defn register-menu-items [entries popup-menu]
-  (loop [items (map
-                 (fn [e] (if (map? e) (e :data) e)) ; if the element is map, retreive :data.
-                 entries)]
+  (loop [items entries]
     (debug (first items))
-    (if (not (empty? items))
+    (if-not (empty? items)
       (let [item (first items) 
-            menu-item (JMenuItem. (format-entry-for-item item))]
-        (register-menu-item [menu-item] (clipboard-set item))
+            menu-item (JMenuItem. (format-entry-for-item (or (item :name) (item :data))))]
+        (register-menu-item [menu-item] (clipboard-set (item :data)))
         (.add popup-menu menu-item)
         (recur (rest items))))))
 
@@ -74,11 +72,10 @@
     (.addSeparator popup-menu)
     ;templates
     (let [templates (templates-get)]
-      (if (empty? templates)
-        (let [menu-item (JMenuItem. "(Templates is empty)")]
-          (register-menu-item [menu-item])
-          (.add popup-menu menu-item))
-        (register-menu-items (templates-get) popup-menu)))
+      (let [template-menu-item (JMenu. "Registerd Templates")]
+        (register-menu-item [template-menu-item])
+        (.add popup-menu template-menu-item)
+        (register-menu-items (templates-get) template-menu-item)))
     (.addSeparator popup-menu)
     ;exit
     (let [menu-item (JMenuItem. "exit")]

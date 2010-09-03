@@ -1,3 +1,8 @@
+2010-09-03  smeghead <smeghead@users.sourceforge.jp>
+
+	* show template list by structured menu.
+	* if it contains templates, it will not register to db.
+
 2010-08-30  smeghead <smeghead@users.sourceforge.jp>
 
 	* add file checks. (user setting file, user templates file)

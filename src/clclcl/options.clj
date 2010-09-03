@@ -9,11 +9,12 @@
 
 (def *default-option-values* {:list-max 30
                               :font-name "VL Pゴシック"
+                              :font-size 12
                               :watch-interval 3000})
 
 (defn get-options []
   (try
-    (if (not (.. (File. *user-setting-file*) exists))
+    (if-not (.. (File. *user-setting-file*) exists)
       (with-out-writer *user-setting-file* (prn *default-option-values*)))
     (let [user-settings (read (java.io.PushbackReader. (reader *user-setting-file*)))]
       (loop [options {}
