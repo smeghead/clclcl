@@ -55,6 +55,8 @@
     (if-not (empty? items)
       (let [item (first items) 
             menu-item (JMenuItem. (format-entry-for-item (or (item :name) (item :data))))]
+        (if-not (= (.getText menu-item) (item :data))
+          (.setToolTipText menu-item (item :data)))
         (register-menu-item [menu-item] (clipboard-set (item :data)))
         (.add popup-menu menu-item)
         (recur (rest items))))))
