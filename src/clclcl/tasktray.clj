@@ -5,7 +5,7 @@
      (java.awt.datatransfer Clipboard DataFlavor StringSelection)
      (java.awt.event ActionListener MouseListener WindowFocusListener)
      (javax.imageio ImageIO)
-     (javax.swing JOptionPane JFrame JPopupMenu JMenuItem JMenu)))
+     (javax.swing JOptionPane JFrame JPopupMenu JMenuItem JMenu UIManager)))
 (impl-get-log (str *ns*))
 
 (def *tray-icon* (ref nil))
@@ -89,6 +89,7 @@
     (.show popup-menu (.getComponent @*frame* 0) 0 0)))
 
 (defn tasktray-register []
+  (UIManager/put "ToolTip.font" (Font. (:font-name (get-options)) Font/PLAIN 12))
   (let [tray (SystemTray/getSystemTray)]
     (dosync (ref-set *tray-icon* (TrayIcon. (get-icon-image) "clclcl")))
     (.addMouseListener @*tray-icon*
