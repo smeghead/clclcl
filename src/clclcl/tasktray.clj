@@ -46,8 +46,7 @@
         e (gensym)]
     `(doto ~menu-item
        (.addActionListener (proxy [ActionListener] []
-                             (actionPerformed [~e] ~@body)))
-       (.setFont (Font. (:font-name (get-options)) Font/PLAIN (:font-size (get-options)))))))
+                             (actionPerformed [~e] ~@body))))))
 
 (defn register-menu-items [entries popup-menu]
   (loop [items entries]
@@ -89,7 +88,9 @@
     (.show popup-menu (.getComponent @*frame* 0) 0 0)))
 
 (defn tasktray-register []
+  ;set default font.
   (UIManager/put "ToolTip.font" (Font. (:font-name (get-options)) Font/PLAIN 12))
+  (UIManager/put "MenuItem.font" (Font. (:font-name (get-options)) Font/PLAIN (:font-size (get-options))))
   (let [tray (SystemTray/getSystemTray)]
     (dosync (ref-set *tray-icon* (TrayIcon. (get-icon-image) "clclcl")))
     (.addMouseListener @*tray-icon*
