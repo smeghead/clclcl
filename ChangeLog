@@ -1,6 +1,7 @@
 2010-09-09  smeghead <smeghead@users.sourceforge.jp>
 
 	* in templates.clj, be able to write function.
+	* when templates.clj, changed how to eval.
 
 2010-09-05  smeghead <smeghead@users.sourceforge.jp>
 

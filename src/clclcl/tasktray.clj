@@ -52,14 +52,18 @@
   (loop [items entries]
     (if-not (empty? items)
       (let [item (first items) 
-            data (item :data)
-            string-data (if (list? data) ((eval data)) data) ; eval form was written in templates.clj
-            menu-item (JMenuItem. (format-entry-for-item (or (item :name) string-data)))]
-        (debug "------------------")
-        (debug string-data)
-        (if-not (= (.getText menu-item) string-data)
-          (.setToolTipText menu-item string-data))
-        (register-menu-item [menu-item] (clipboard-set string-data))
+            loaded-item (do 
+                          (debug "------------------")
+                          (debug item)
+                          (cond
+                            (list? item) ((eval item)) ; eval form was written in templates.clj
+                            (coll? item) item
+                            :else {:name item :data item}))
+            data (loaded-item :data)
+            menu-item (JMenuItem. (format-entry-for-item (or (loaded-item :name) data)))]
+        (if-not (= (.getText menu-item) data)
+          (.setToolTipText menu-item data))
+        (register-menu-item [menu-item] (clipboard-set data))
         (.add popup-menu menu-item)
         (recur (rest items))))))
 
@@ -91,7 +95,8 @@
       (.requestFocusInWindow popup-menu)
       (.show popup-menu (.getComponent @*frame* 0) 0 0))
     (catch Exception e
-      (error "error occured when display-menu." e))))
+      (error "error occured when display-menu." e)
+      (throw e))))
 
 (defn tasktray-register []
   ;set default font.

@@ -11,8 +11,8 @@
   (try
     (if-not (.. (File. *user-templates-file*) exists)
       (with-out-writer *user-templates-file* (prn [])))
-    (map (fn [x] (if (map? x) x {:name x :data x}))
-         (read (java.io.PushbackReader. (reader *user-templates-file*))))
+    ;(map (fn [x] (if (map? x) x {:name x :data x}))
+         (read (java.io.PushbackReader. (reader *user-templates-file*)));)
     (catch Exception e
       (error "failed to read user templates file." e)
       [])))
