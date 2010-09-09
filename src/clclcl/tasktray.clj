@@ -1,6 +1,6 @@
 (ns clclcl.tasktray
   (:gen-class)
-  (:use clojure.contrib.logging clclcl.options clclcl.database clclcl.clipboard clclcl.history clclcl.utils clclcl.templates)
+  (:use clojure.contrib.logging clojure.test clclcl.options clclcl.database clclcl.clipboard clclcl.history clclcl.utils clclcl.templates)
   (:import (java.awt SystemTray TrayIcon Image Font)
      (java.awt.datatransfer Clipboard DataFlavor StringSelection)
      (java.awt.event ActionListener MouseListener WindowFocusListener)
@@ -50,42 +50,48 @@
 
 (defn register-menu-items [entries popup-menu]
   (loop [items entries]
-    (debug (first items))
     (if-not (empty? items)
       (let [item (first items) 
-            menu-item (JMenuItem. (format-entry-for-item (or (item :name) (item :data))))]
-        (if-not (= (.getText menu-item) (item :data))
-          (.setToolTipText menu-item (item :data)))
-        (register-menu-item [menu-item] (clipboard-set (item :data)))
+            data (item :data)
+            string-data (if (list? data) ((eval data)) data) ; eval form was written in templates.clj
+            menu-item (JMenuItem. (format-entry-for-item (or (item :name) string-data)))]
+        (debug "------------------")
+        (debug string-data)
+        (if-not (= (.getText menu-item) string-data)
+          (.setToolTipText menu-item string-data))
+        (register-menu-item [menu-item] (clipboard-set string-data))
         (.add popup-menu menu-item)
         (recur (rest items))))))
 
 (defn display-menu [x y]
-  (setup-frame)
-  (doto @*frame*
-    (.dispose)
-    (.setUndecorated true)
-    (.setBounds x y 0 0)
-    (.setVisible true))
-  (let [popup-menu (JPopupMenu.)]
-    ;history
-    (register-menu-items (history-get) popup-menu)
-    (.addSeparator popup-menu)
-    ;templates
-    (let [templates (templates-get)]
-      (let [template-menu-item (JMenu. "Registerd Templates")]
-        (register-menu-item [template-menu-item])
-        (.add popup-menu template-menu-item)
-        (register-menu-items (templates-get) template-menu-item)))
-    (.addSeparator popup-menu)
-    ;exit
-    (let [menu-item (JMenuItem. "exit")]
-      (register-menu-item [menu-item]
-                          (db-shutdown)
-                          (java.lang.System/exit 0))
-      (.add popup-menu menu-item))
-    (.requestFocusInWindow popup-menu)
-    (.show popup-menu (.getComponent @*frame* 0) 0 0)))
+  (try
+    (setup-frame)
+    (doto @*frame*
+      (.dispose)
+      (.setUndecorated true)
+      (.setBounds x y 0 0)
+      (.setVisible true))
+    (let [popup-menu (JPopupMenu.)]
+      ;history
+      (register-menu-items (history-get) popup-menu)
+      (.addSeparator popup-menu)
+      ;templates
+      (let [templates (templates-get)]
+        (let [template-menu-item (JMenu. "Registerd Templates")]
+          (register-menu-item [template-menu-item])
+          (.add popup-menu template-menu-item)
+          (register-menu-items (templates-get) template-menu-item)))
+      (.addSeparator popup-menu)
+      ;exit
+      (let [menu-item (JMenuItem. "exit")]
+        (register-menu-item [menu-item]
+                            (db-shutdown)
+                            (java.lang.System/exit 0))
+        (.add popup-menu menu-item))
+      (.requestFocusInWindow popup-menu)
+      (.show popup-menu (.getComponent @*frame* 0) 0 0))
+    (catch Exception e
+      (error "error occured when display-menu." e))))
 
 (defn tasktray-register []
   ;set default font.
