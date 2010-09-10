@@ -5,7 +5,8 @@
      (java.awt.datatransfer Clipboard DataFlavor StringSelection)
      (java.awt.event ActionListener MouseListener WindowFocusListener)
      (javax.imageio ImageIO)
-     (javax.swing JOptionPane JFrame JPopupMenu JMenuItem JMenu UIManager)))
+     (javax.swing JOptionPane JFrame JPopupMenu JMenuItem JMenu UIManager)
+     (javax.swing.event PopupMenuListener)))
 (impl-get-log (str *ns*))
 
 (def *tray-icon* (ref nil))
@@ -32,11 +33,7 @@
     (dosync (ref-set *frame* 
                      (let [frame (JFrame. "clclcl")]
                        (doto frame
-                         (.setIconImage (get-icon-image))
-                         (.addWindowFocusListener
-                           (proxy [WindowFocusListener] []
-                             (windowGainedFocus [e])
-                             (windowLostFocus [e] (.setVisible frame false))))))))))
+                         (.setIconImage (get-icon-image))))))))
 
 (defmacro register-menu-item [args & body]
   (let [[menu-item] args
@@ -91,6 +88,11 @@
                             (java.lang.System/exit 0))
         (.add popup-menu menu-item))
       (.requestFocusInWindow popup-menu)
+      (.addPopupMenuListener popup-menu
+                               (proxy [PopupMenuListener] []
+                                 (popupMenuCanceled [e])
+                                 (popupMenuWillBecomeInvisible [e](.setVisible @*frame* false ))
+                                 (popupMenuWillBecomeVisible [e])))
       (.show popup-menu (.getComponent @*frame* 0) 0 0))
     (catch Exception e
       (error "error occured when display-menu." e)

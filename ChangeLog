@@ -2,6 +2,7 @@
 
 	* be able to open menu by keyboard shotcut. listening tcp 1000 port,
 	notified and open menu.
+	* popupmenu become invisible, swing frame be invisible too.
 
 2010-09-09  smeghead <smeghead@users.sourceforge.jp>
 
