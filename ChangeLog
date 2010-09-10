@@ -1,3 +1,8 @@
+2010-09-11  smeghead <smeghead@users.sourceforge.jp>
+
+	* be able to open menu by keyboard shotcut. listening tcp 1000 port,
+	notified and open menu.
+
 2010-09-09  smeghead <smeghead@users.sourceforge.jp>
 
 	* in templates.clj, be able to write function.

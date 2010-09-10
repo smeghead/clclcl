@@ -1,7 +1,7 @@
 (ns clclcl.tasktray
   (:gen-class)
-  (:use clojure.contrib.logging clojure.test clclcl.options clclcl.database clclcl.clipboard clclcl.history clclcl.utils clclcl.templates)
-  (:import (java.awt SystemTray TrayIcon Image Font)
+  (:use clojure.contrib.logging clojure.test clclcl.options clclcl.database clclcl.clipboard clclcl.history clclcl.utils clclcl.templates clclcl.server)
+  (:import (java.awt SystemTray TrayIcon Image Font MouseInfo)
      (java.awt.datatransfer Clipboard DataFlavor StringSelection)
      (java.awt.event ActionListener MouseListener WindowFocusListener)
      (javax.imageio ImageIO)
@@ -20,9 +20,6 @@
            acc '()]
       (let [letter-count (first (first chars))
             letter (second (first chars))]
-        (debug letter-count)
-        (debug letter)
-        (debug acc)
         (if (> cnt 40)
           (apply str (reverse (conj acc "...")))
           (recur (rest chars) (+ cnt letter-count) (conj acc letter)))))
@@ -90,6 +87,7 @@
       (let [menu-item (JMenuItem. "exit")]
         (register-menu-item [menu-item]
                             (db-shutdown)
+                            (stop-server) ; stop listen server.
                             (java.lang.System/exit 0))
         (.add popup-menu menu-item))
       (.requestFocusInWindow popup-menu)
@@ -99,6 +97,13 @@
       (throw e))))
 
 (defn tasktray-register []
+  ;listen server start
+  (start-server (fn listen-fn [in out]
+                  (debug (str "cought message "))
+                  (let [point (.getLocation (MouseInfo/getPointerInfo))]
+                    (debug (str (.x point) (.y point)))
+                    (display-menu (.x point) (.y point))
+                    (debug "display-menu"))))
   ;set default font.
   (UIManager/put "ToolTip.font" (Font. (:font-name (get-options)) Font/PLAIN 12))
   (UIManager/put "MenuItem.font" (Font. (:font-name (get-options)) Font/PLAIN (:font-size (get-options))))
