@@ -1,3 +1,7 @@
+2010-09-14  smeghead <smeghead@users.sourceforge.jp>
+
+	* add tests for options.clj.
+
 2010-09-11  smeghead <smeghead@users.sourceforge.jp>
 
 	* be able to open menu by keyboard shotcut. listening tcp 1000 port,
