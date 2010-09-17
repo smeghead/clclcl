@@ -1,3 +1,7 @@
+2010-09-17  smeghead <smeghead@users.sourceforge.jp>
+
+	* switched database from derby to sqlite3. became super faster than past.
+
 2010-09-14  smeghead <smeghead@users.sourceforge.jp>
 
 	* add tests for options.clj.

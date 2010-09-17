@@ -61,9 +61,15 @@
         (.add popup-menu menu-item)
         (recur (rest items))))))
 
+(defn debug-time [message]
+  (let [d (java.util.Date.)]
+    (debug (str (.getSeconds d) "." (.getTime d) " " message))))
+
 (defn display-menu [x y]
   (try
+    (debug-time "start")
     (setup-frame)
+    (debug-time "setup-frame end")
     (doto @*frame*
       (.dispose)
       (.setUndecorated true)
@@ -71,9 +77,11 @@
       (.setVisible true))
     (let [popup-menu (JPopupMenu.)]
       ;history
+      (debug-time "history start")
       (register-menu-items (history-get) popup-menu)
       (.addSeparator popup-menu)
       ;templates
+      (debug-time "templates start")
       (let [templates (templates-get)]
         (let [template-menu-item (JMenu. "Registerd Templates")]
           (register-menu-item [template-menu-item])
@@ -81,6 +89,7 @@
           (register-menu-items (templates-get) template-menu-item)))
       (.addSeparator popup-menu)
       ;exit
+      (debug-time "exit start")
       (let [menu-item (JMenuItem. "exit")]
         (register-menu-item [menu-item]
                             (db-shutdown)
@@ -89,11 +98,12 @@
         (.add popup-menu menu-item))
       (.requestFocusInWindow popup-menu)
       (.addPopupMenuListener popup-menu
-                               (proxy [PopupMenuListener] []
-                                 (popupMenuCanceled [e])
-                                 (popupMenuWillBecomeInvisible [e](.setVisible @*frame* false ))
-                                 (popupMenuWillBecomeVisible [e])))
+                             (proxy [PopupMenuListener] []
+                               (popupMenuCanceled [e])
+                               (popupMenuWillBecomeInvisible [e](.setVisible @*frame* false ))
+                               (popupMenuWillBecomeVisible [e])))
       (.show popup-menu (.getComponent @*frame* 0) 0 0))
+    (debug-time "end")
     (catch Exception e
       (error "error occured when display-menu." e)
       (throw e))))
