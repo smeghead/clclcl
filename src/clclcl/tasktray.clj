@@ -1,12 +1,12 @@
 (ns clclcl.tasktray
   (:gen-class)
   (:use clojure.contrib.logging clojure.test clclcl.options clclcl.database clclcl.clipboard clclcl.history clclcl.utils clclcl.templates clclcl.server)
-  (:import (java.awt SystemTray TrayIcon Image Font MouseInfo)
+  (:import (java.awt SystemTray TrayIcon Image Font MouseInfo Robot)
      (java.awt.datatransfer Clipboard DataFlavor StringSelection)
-     (java.awt.event ActionListener MouseListener WindowFocusListener)
+     (java.awt.event ActionListener MouseListener WindowFocusListener KeyEvent)
      (javax.imageio ImageIO)
      (javax.swing JOptionPane JFrame JPopupMenu JMenuItem JMenu UIManager)
-     (javax.swing.event PopupMenuListener)))
+     (javax.swing.event PopupMenuListener MenuKeyListener)))
 (impl-get-log (str *ns*))
 
 (def *tray-icon* (ref nil))
@@ -75,7 +75,20 @@
       (.setUndecorated true)
       (.setBounds x y 0 0)
       (.setVisible true))
-    (let [popup-menu (JPopupMenu.)]
+    (let [popup-menu (JPopupMenu.)
+          robot (Robot.)]
+      ;register keybind.
+      (.addMenuKeyListener popup-menu
+                           (proxy [MenuKeyListener] []
+                             (menuKeyTyped [e])
+                             (menuKeyPressed [e]
+                                             (cond
+                                               (= (.getKeyCode e) KeyEvent/VK_J) (.keyPress robot KeyEvent/VK_DOWN)
+                                               (= (.getKeyCode e) KeyEvent/VK_K) (.keyPress robot KeyEvent/VK_UP)))
+                             (menuKeyReleased [e]
+                                             (cond
+                                               (= (.getKeyCode e) KeyEvent/VK_J) (.keyRelease robot KeyEvent/VK_DOWN)
+                                               (= (.getKeyCode e) KeyEvent/VK_K) (.keyRelease robot KeyEvent/VK_UP)))))
       ;history
       (debug-time "history start")
       (register-menu-items (history-get) popup-menu)
