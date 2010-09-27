@@ -61,15 +61,9 @@
         (.add popup-menu menu-item)
         (recur (rest items))))))
 
-(defn debug-time [message]
-  (let [d (java.util.Date.)]
-    (debug (str (.getSeconds d) "." (.getTime d) " " message))))
-
 (defn display-menu [x y]
   (try
-    (debug-time "start")
     (setup-frame)
-    (debug-time "setup-frame end")
     (doto @*frame*
       (.dispose)
       (.setUndecorated true)
@@ -83,18 +77,24 @@
                              (menuKeyTyped [e])
                              (menuKeyPressed [e]
                                              (cond
+                                               (and (= (.getKeyCode e) KeyEvent/VK_OPEN_BRACKET) (.isControlDown e)) (.setVisible popup-menu false)
+                                               (and (= (.getKeyCode e) KeyEvent/VK_M) (.isControlDown e)) (do
+                                                                                                            (.keyPress robot KeyEvent/VK_ENTER)
+                                                                                                            (.keyRelease robot KeyEvent/VK_ENTER))
+                                               (= (.getKeyCode e) KeyEvent/VK_H) (.keyPress robot KeyEvent/VK_LEFT)
+                                               (= (.getKeyCode e) KeyEvent/VK_L) (.keyPress robot KeyEvent/VK_RIGHT)
                                                (= (.getKeyCode e) KeyEvent/VK_J) (.keyPress robot KeyEvent/VK_DOWN)
                                                (= (.getKeyCode e) KeyEvent/VK_K) (.keyPress robot KeyEvent/VK_UP)))
                              (menuKeyReleased [e]
                                              (cond
+                                               (= (.getKeyCode e) KeyEvent/VK_H) (.keyRelease robot KeyEvent/VK_LEFT)
+                                               (= (.getKeyCode e) KeyEvent/VK_L) (.keyRelease robot KeyEvent/VK_RIGHT)
                                                (= (.getKeyCode e) KeyEvent/VK_J) (.keyRelease robot KeyEvent/VK_DOWN)
                                                (= (.getKeyCode e) KeyEvent/VK_K) (.keyRelease robot KeyEvent/VK_UP)))))
       ;history
-      (debug-time "history start")
       (register-menu-items (history-get) popup-menu)
       (.addSeparator popup-menu)
       ;templates
-      (debug-time "templates start")
       (let [templates (templates-get)]
         (let [template-menu-item (JMenu. "Registerd Templates")]
           (register-menu-item [template-menu-item])
@@ -102,7 +102,6 @@
           (register-menu-items (templates-get) template-menu-item)))
       (.addSeparator popup-menu)
       ;exit
-      (debug-time "exit start")
       (let [menu-item (JMenuItem. "exit")]
         (register-menu-item [menu-item]
                             (db-shutdown)
@@ -116,7 +115,6 @@
                                (popupMenuWillBecomeInvisible [e](.setVisible @*frame* false ))
                                (popupMenuWillBecomeVisible [e])))
       (.show popup-menu (.getComponent @*frame* 0) 0 0))
-    (debug-time "end")
     (catch Exception e
       (error "error occured when display-menu." e)
       (throw e))))
@@ -124,11 +122,8 @@
 (defn tasktray-register []
   ;listen server start
   (start-server (fn listen-fn [in out]
-                  (debug (str "cought message "))
                   (let [point (.getLocation (MouseInfo/getPointerInfo))]
-                    (debug (str (.x point) (.y point)))
-                    (display-menu (.x point) (.y point))
-                    (debug "display-menu"))))
+                    (display-menu (.x point) (.y point)))))
   ;set default font.
   (UIManager/put "ToolTip.font" (Font. (:font-name (get-options)) Font/PLAIN 12))
   (UIManager/put "MenuItem.font" (Font. (:font-name (get-options)) Font/PLAIN (:font-size (get-options))))
