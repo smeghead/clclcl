@@ -10,7 +10,7 @@ default:
 
 dist: default
 	mkdir -p ${DIST_DIR}
-	cp ChangeLog README clclcl logging.properties clclcl.bat clclcl-standalone.jar ${DIST_DIR}
+	cp ChangeLog README clclcl clclcl-menu-open logging.properties clclcl.bat clclcl-standalone.jar ${DIST_DIR}
 	chmod +x ${DIST_DIR}/clclcl
 	cd dist && zip -r clclcl-${VERSION}.zip clclcl-${VERSION}
 
