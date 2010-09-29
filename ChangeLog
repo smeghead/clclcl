@@ -1,6 +1,8 @@
 2010-09-29  smeghead <smeghead@users.sourceforge.jp>
 
 	* added keybind setting script file to release files.
+	* changed timing when evaluate template function type. when menu
+	selected, function will be evaluated.
 
 2010-09-27  smeghead <smeghead@users.sourceforge.jp>
 

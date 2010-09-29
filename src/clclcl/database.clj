@@ -33,5 +33,5 @@
 (defn db-select-clipboard-data [{list-max :list-max}]
   (with-connection *db*
                    ;this part(fetch first ?) may be not supported bind parameter(?). so use String.format.
-                   (with-query-results rs [(format "select * from clipboard_data order by id desc limit %d offset 0" list-max)]
+                   (with-query-results rs [(format "select *, data as name from clipboard_data order by id desc limit %d offset 0" list-max)]
                                        (doall rs))))

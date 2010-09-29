@@ -46,18 +46,17 @@
   (loop [items entries]
     (if-not (empty? items)
       (let [item (first items) 
-            loaded-item (do 
-                          (debug "------------------")
-                          (debug item)
-                          (cond
-                            (list? item) ((eval item)) ; eval form was written in templates.clj
+            loaded-item (cond
                             (coll? item) item
-                            :else {:name item :data item}))
+                            :else {:name item :data item})
+            name (loaded-item :name)
             data (loaded-item :data)
-            menu-item (JMenuItem. (format-entry-for-item (or (loaded-item :name) data)))]
-        (if-not (= (.getText menu-item) data)
-          (.setToolTipText menu-item data))
-        (register-menu-item [menu-item] (clipboard-set data))
+            menu-item (JMenuItem. (format-entry-for-item name))]
+        (if-not (= (.getText menu-item) (str data))
+          (.setToolTipText menu-item (str data)))
+        (register-menu-item [menu-item] (clipboard-set (if (list? data)
+                                                         ((eval data)) ;eval form was written in templates.clj
+                                                         data)))
         (.add popup-menu menu-item)
         (recur (rest items))))))
 
@@ -95,11 +94,10 @@
       (register-menu-items (history-get) popup-menu)
       (.addSeparator popup-menu)
       ;templates
-      (let [templates (templates-get)]
-        (let [template-menu-item (JMenu. "Registerd Templates")]
-          (register-menu-item [template-menu-item])
-          (.add popup-menu template-menu-item)
-          (register-menu-items (templates-get) template-menu-item)))
+      (let [template-menu-item (JMenu. "Registerd Templates")]
+        (register-menu-item [template-menu-item])
+        (.add popup-menu template-menu-item)
+        (register-menu-items (templates-get) template-menu-item))
       (.addSeparator popup-menu)
       ;exit
       (let [menu-item (JMenuItem. "exit")]
