@@ -5,6 +5,7 @@
      [java.io File]))
 (impl-get-log (str *ns*))
 
+(def *database-dir* (str (System/getenv "HOME") "/.clclcl"))
 (def *database-path* (str (System/getenv "HOME") "/.clclcl/clclcl.db"))
 (def *db* {:classname "org.sqlite.JDBC"
            :subprotocol "sqlite"
@@ -14,11 +15,13 @@
   (.newInstance (Class/forName "org.sqlite.JDBC"))
   (let [dir (File. *database-path*)]
     (if-not (.exists dir)
-      (with-connection (assoc *db* :create true)
-                       (create-table :clipboard_data
-                                     [:id :int "primary key"]
-                                     [:data_type "varchar(36)"]
-                                     [:data "varchar(30000)"])))))
+      (do
+        (.mkdir (File. *database-dir*))
+        (with-connection (assoc *db* :create true)
+                         (create-table :clipboard_data
+                                       [:id :int "primary key"]
+                                       [:data_type "varchar(36)"]
+                                       [:data "varchar(30000)"]))))))
 
 (defn db-shutdown [])
 

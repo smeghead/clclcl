@@ -1,3 +1,7 @@
+2010-10-25  smeghead <smeghead@users.sourceforge.jp>
+
+	* fixed a bug not to make .clclcl directory.
+
 2010-10-06  smeghead <smeghead@users.sourceforge.jp>
 
 	* fixed dirty trick on derby. change how to set sql parameters.

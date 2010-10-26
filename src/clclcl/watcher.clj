@@ -11,7 +11,9 @@
   (try
     (let [s (clipboard-get)]
       (if (and s (not (empty? s)))
-        (history-insert s)))
+        (do
+          (history-insert s)
+          (history-update))))
     (catch Exception e
       (error "watcher-loop failed." e)))
   (Thread/sleep (:watch-interval (get-options)))

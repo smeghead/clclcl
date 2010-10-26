@@ -1,4 +1,4 @@
-VERSION=0.1.0-beta
+VERSION=0.1.1-beta
 DIST_DIR=dist/clclcl-${VERSION}
 
 default:

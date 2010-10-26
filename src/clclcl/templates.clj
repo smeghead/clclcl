@@ -7,14 +7,19 @@
 
 (def *user-templates-file* (str (System/getenv "HOME") "/.clclcl/templates.clj"))
 
+(def *templates* (ref nil))
+
 (defn templates-get []
-  (try
-    (if-not (.. (File. *user-templates-file*) exists)
-      (with-out-writer *user-templates-file* (prn [])))
-    (read (java.io.PushbackReader. (reader *user-templates-file*)));)
-    (catch Exception e
-      (error "failed to read user templates file." e)
-      [])))
+  (or @*templates*
+      (try
+        (if-not (.. (File. *user-templates-file*) exists)
+          (with-out-writer *user-templates-file* (prn [])))
+        (dosync (ref-set *templates*
+                         (read (java.io.PushbackReader. (reader *user-templates-file*)))))
+        @*templates*
+        (catch Exception e
+          (error "failed to read user templates file." e)
+          []))))
 
 (defn templates-match [s]
   (some (fn [x]
