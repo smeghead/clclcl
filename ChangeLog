@@ -1,3 +1,8 @@
+2010-11-05  smeghead <smeghead@users.sourceforge.jp>
+
+	* change repogitry to github from sourceforge.net.
+	* fixed mojibake of README.
+
 2010-10-25  smeghead <smeghead@users.sourceforge.jp>
 
 	* fixed a bug not to make .clclcl directory.
