@@ -11,7 +11,8 @@
                               :font-name "VL Pゴシック"
                               :font-size 12
                               :watch-interval 3000
-                              :server-port 10000})
+                              :server-port 10000
+                              :ignore-words []})
 
 (defn get-options []
   (try

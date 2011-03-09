@@ -10,7 +10,9 @@
 (defn watcher-loop []
   (try
     (let [s (clipboard-get)]
-      (if (and s (not (empty? s)))
+      (if (and s
+               (not (empty? s))
+               (not (some (fn [x] (> (.indexOf s x) -1)) (:ignore-words (get-options)))))
         (do
           (history-insert s)
           (history-update))))

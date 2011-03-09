@@ -1,7 +1,13 @@
+2011-03-10  smeghead <smeghead7@gmail.com>
+
+	* add ignore-words option. If clipboard data contains ignore-words, not to be recorded.
+
 2010-11-05  smeghead <smeghead@users.sourceforge.jp>
 
 	* change repogitry to github from sourceforge.net.
 	* fixed mojibake of README.
+	* delete deps jar files.
+	* delete clclcl-javadb shell script.
 
 2010-10-25  smeghead <smeghead@users.sourceforge.jp>
 

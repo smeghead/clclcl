@@ -8,5 +8,6 @@
   (info "start clclcl.")
   (db-init)
   (history-get) ; initial database access is very late. so execute dummy access here.
+  (setup-frame)
   (watcher-register)
   (tasktray-register))
