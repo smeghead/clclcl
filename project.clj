@@ -1,4 +1,4 @@
-(defproject clclcl "1.0.0-SNAPSHOT"
+(defproject clclcl "0.1.2-beta"
             :description "access to clipboard histories."
             :dependencies [[org.clojure/clojure "1.2.0"]
                            [org.clojure/clojure-contrib "1.2.0"]
