@@ -23,8 +23,6 @@
                                        [:data_type "varchar(36)"]
                                        [:data "varchar(30000)"]))))))
 
-(defn db-shutdown [])
-
 (defn db-delete-clipboard-data [s]
   (with-connection *db*
                    (delete-rows :clipboard_data ["data=?" s])))
