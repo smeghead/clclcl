@@ -8,10 +8,7 @@
 (def *user-setting-file* (str (System/getenv "HOME") "/.clclcl/clclcl.conf"))
 
 (def *default-option-values* {:list-max 30
-                              :font-name "VL Pゴシック"
-                              :font-size 12
                               :watch-interval 3000
-                              :server-port 10000
                               :ignore-words []})
 
 (defn get-options []

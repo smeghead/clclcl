@@ -9,22 +9,22 @@
      (javax.imageio ImageIO)))
 (impl-get-log (str *ns*))
 
-(def *tray-icon* (ref nil))
-
 (defn get-icon-image-stream []
   (.getResourceAsStream (.getClass "") "/clclcl/clclcl.png"))
 
 (defn format-entry-for-item [entry]
-  (if (> (reduce + (map #(min 2 (count (.getBytes (str %)))) entry)) 40)
-    (loop [chars (map #(list (min 2 (count (.getBytes (str %)))) %) entry)
-           cnt 0
-           acc '()]
-      (let [letter-count (first (first chars))
-            letter (second (first chars))]
-        (if (> cnt 40)
-          (apply str (reverse (conj acc "...")))
-          (recur (rest chars) (+ cnt letter-count) (conj acc letter)))))
-    entry))
+  (let [ent (.replace entry "\n" "")
+        max-length 50]
+    (if (> (reduce + (map #(min 2 (count (.getBytes (str %)))) ent)) max-length)
+      (loop [chars (map #(list (min 2 (count (.getBytes (str %)))) %) ent)
+             cnt 0
+             acc '()]
+        (let [letter-count (first (first chars))
+              letter (second (first chars))]
+          (if (> cnt max-length)
+            (apply str (reverse (conj acc "...")))
+            (recur (rest chars) (+ cnt letter-count) (conj acc letter)))))
+      ent)))
 
 (def *frame* (ref nil))
 
@@ -58,25 +58,9 @@
   (try
     (let [popup-menu (Menu. shell  SWT/POP_UP)]
       ;register keybind.
-;      (.addMenuKeyListener popup-menu
-;                           (proxy [MenuKeyListener] []
-;                             (menuKeyTyped [e])
-;                             (menuKeyPressed [e]
-;                                             (cond
-;                                               (and (= (.getKeyCode e) KeyEvent/VK_OPEN_BRACKET) (.isControlDown e)) (.setVisible popup-menu false)
-;                                               (and (= (.getKeyCode e) KeyEvent/VK_M) (.isControlDown e)) (do
-;                                                                                                            (.keyPress robot KeyEvent/VK_ENTER)
-;                                                                                                            (.keyRelease robot KeyEvent/VK_ENTER))
-;                                               (= (.getKeyCode e) KeyEvent/VK_H) (.keyPress robot KeyEvent/VK_LEFT)
-;                                               (= (.getKeyCode e) KeyEvent/VK_L) (.keyPress robot KeyEvent/VK_RIGHT)
-;                                               (= (.getKeyCode e) KeyEvent/VK_J) (.keyPress robot KeyEvent/VK_DOWN)
-;                                               (= (.getKeyCode e) KeyEvent/VK_K) (.keyPress robot KeyEvent/VK_UP)))
-;                             (menuKeyReleased [e]
-;                                             (cond
-;                                               (= (.getKeyCode e) KeyEvent/VK_H) (.keyRelease robot KeyEvent/VK_LEFT)
-;                                               (= (.getKeyCode e) KeyEvent/VK_L) (.keyRelease robot KeyEvent/VK_RIGHT)
-;                                               (= (.getKeyCode e) KeyEvent/VK_J) (.keyRelease robot KeyEvent/VK_DOWN)
-;                                               (= (.getKeyCode e) KeyEvent/VK_K) (.keyRelease robot KeyEvent/VK_UP)))))
+;      (.addListener popup-menu SWT/KeyDown (proxy [Listener] []
+;                                                (handleEvent [e]
+;                                                            (info "pressed."))))
       ;history
       (register-menu-items (history-get) popup-menu)
       (MenuItem. popup-menu SWT/SEPARATOR)
@@ -93,10 +77,8 @@
       (let [menu-item (MenuItem. popup-menu SWT/PUSH)]
         (.setText menu-item "Exit")
         (register-menu-item [menu-item]
-                            (java.lang.System/exit 0))
-        )
-      (.setVisible popup-menu true))
-    ))
+                            (java.lang.System/exit 0)))
+      (.setVisible popup-menu true))))
 
 (defn tasktray-register []
   (let [display (Display.)
@@ -106,28 +88,20 @@
     (doto tray-item
       (.setToolTipText "clclcl")
       (.setImage (Image. display (get-icon-image-stream)))
+      (.addListener SWT/Selection (proxy [Listener] []
+                                     (handleEvent [e]
+                                                  (display-menu shell))))
       (.addListener SWT/MenuDetect (proxy [Listener] []
                                      (handleEvent [e]
-                                                  (info "selected")
-                                                  (display-menu shell))
-                                     )))
+                                                  (display-menu shell)))))
+
+    ; main event loop
     (loop []
       (if (.readAndDispatch display)
         (do
           (.sleep display)
           (recur))
-        (.dispose display))))
-  (info "ok")
-
-;  (let [tray (SystemTray/getSystemTray)]
-;    (dosync (ref-set *tray-icon* (TrayIcon. (get-icon-image) "clclcl")))
-;    (.addMouseListener @*tray-icon*
-;                       (proxy [MouseListener] []
-;                         (mousePressed [e])
-;                         (mouseReleased [e])
-;                         (mouseEntered [e])
-;                         (mouseExited [e])
-;                         (mouseClicked [e] (display-menu (.getXOnScreen e) (.getYOnScreen e)))))
-;    (.add tray @*tray-icon*)
-;    (trace "tasktray-register."))
-  )
+        (.dispose display)))
+    ; clean up.
+    (.dispose display)
+    (.dispose shell)))

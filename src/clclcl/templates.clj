@@ -13,7 +13,7 @@
   (or @*templates*
       (try
         (if-not (.. (File. *user-templates-file*) exists)
-          (with-out-writer *user-templates-file* (prn [])))
+          (with-out-writer *user-templates-file* (prn [(str "Please modify ${HOME}/.clclcl/templates.clj")])))
         (dosync (ref-set *templates*
                          (read (java.io.PushbackReader. (reader *user-templates-file*)))))
         @*templates*
