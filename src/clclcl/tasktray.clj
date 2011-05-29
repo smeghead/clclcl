@@ -1,6 +1,6 @@
 (ns clclcl.tasktray
   (:gen-class)
-  (:use clojure.contrib.logging clojure.test clclcl.options clclcl.database clclcl.clipboard clclcl.history clclcl.utils clclcl.templates clclcl.server)
+  (:use clojure.contrib.logging clojure.test clclcl.options clclcl.database clclcl.clipboard clclcl.history clclcl.utils clclcl.templates)
   (:import 
      (org.eclipse.swt SWT)
      (org.eclipse.swt.widgets Display Tray TrayItem Shell Menu MenuItem Listener)
@@ -79,13 +79,16 @@
 ;                                               (= (.getKeyCode e) KeyEvent/VK_K) (.keyRelease robot KeyEvent/VK_UP)))))
       ;history
       (register-menu-items (history-get) popup-menu)
-;      (.addSeparator popup-menu)
+      (MenuItem. popup-menu SWT/SEPARATOR)
       ;templates
-;      (let [template-menu-item (JMenu. "Registerd Templates")]
-;        (register-menu-item [template-menu-item])
-;        (.add popup-menu template-menu-item)
-;        (register-menu-items (templates-get) template-menu-item))
-;      (.addSeparator popup-menu)
+      (let [template-menu-item (MenuItem. popup-menu SWT/CASCADE)
+            sub-menu (Menu. popup-menu)]
+        (doto template-menu-item
+          (.setText "Registered Templates")
+          (.setMenu sub-menu))
+        (register-menu-item [template-menu-item])
+        (register-menu-items (templates-get) sub-menu))
+      (MenuItem. popup-menu SWT/SEPARATOR)
       ;exit
       (let [menu-item (MenuItem. popup-menu SWT/PUSH)]
         (.setText menu-item "Exit")

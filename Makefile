@@ -1,4 +1,4 @@
-VERSION=0.1.2-beta
+VERSION=$(shell head -1 project.clj | sed -e 's/[^"]*"\([^"]*\)"[^"]*/\1/')
 DIST_DIR=dist/clclcl-${VERSION}
 
 default:
@@ -12,3 +12,6 @@ dist: default
 
 clean:
 	rm -rf classes/* clclcl*.jar
+
+vtest:
+	echo ${VERSION}
