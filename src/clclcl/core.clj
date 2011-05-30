@@ -9,4 +9,5 @@
   (db-init)
   (history-get) ; initial database access is very late. so execute dummy access here.
   (watcher-register)
-  (tasktray-register))
+  (tasktray-register)
+  (System/exit 0))

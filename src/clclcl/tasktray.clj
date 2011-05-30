@@ -77,7 +77,7 @@
       (let [menu-item (MenuItem. popup-menu SWT/PUSH)]
         (.setText menu-item "Exit")
         (register-menu-item [menu-item]
-                            (java.lang.System/exit 0)))
+                            (.close shell)))
       (.setVisible popup-menu true))))
 
 (defn tasktray-register []
@@ -97,11 +97,12 @@
 
     ; main event loop
     (loop []
-      (if (.readAndDispatch display)
+      (if-not  (.isDisposed shell)
         (do
-          (.sleep display)
-          (recur))
-        (.dispose display)))
+          (if (.readAndDispatch display)
+          (.sleep display))
+          (recur))))
     ; clean up.
+    (info "clean up.")
     (.dispose display)
     (.dispose shell)))
