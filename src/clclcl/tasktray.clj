@@ -13,7 +13,9 @@
   (.getResourceAsStream (.getClass "") "/clclcl/clclcl.png"))
 
 (defn format-entry-for-item [entry]
-  (let [ent (.replace entry "\n" "")
+  (let [ent (-> entry
+              (.replaceAll "\n" "")
+              (.replaceAll "[ \t]+" " "))
         max-length 50]
     (if (> (reduce + (map #(min 2 (count (.getBytes (str %)))) ent)) max-length)
       (loop [chars (map #(list (min 2 (count (.getBytes (str %)))) %) ent)
