@@ -1,9 +1,9 @@
 (ns clclcl.tasktray
   (:gen-class)
-  (:use clojure.contrib.logging clojure.test clclcl.options clclcl.database clclcl.clipboard clclcl.history clclcl.utils clclcl.templates)
+  (:use clojure.contrib.logging clojure.test clclcl.options clclcl.database clclcl.clipboard clclcl.history clclcl.utils clclcl.templates clclcl.server)
   (:import 
      (org.eclipse.swt SWT)
-     (org.eclipse.swt.widgets Display Tray TrayItem Shell Menu MenuItem Listener)
+     (org.eclipse.swt.widgets Event Display Tray TrayItem Shell Menu MenuItem Listener Composite MessageBox ToolTip)
      (org.eclipse.swt.graphics Device Image)
      (org.eclipse.swt.events SelectionAdapter)
      (javax.imageio ImageIO)))
@@ -57,42 +57,62 @@
         (recur (rest items))))))
 
 (defn display-menu [shell]
-  (try
-    (let [popup-menu (Menu. shell  SWT/POP_UP)]
-      ;register keybind.
+  (let [popup-menu (Menu. shell  SWT/POP_UP)]
+    ;register keybind.
 ;      (.addListener popup-menu SWT/KeyDown (proxy [Listener] []
 ;                                                (handleEvent [e]
 ;                                                            (info "pressed."))))
-      ;history
-      (register-menu-items (history-get) popup-menu)
-      (MenuItem. popup-menu SWT/SEPARATOR)
-      ;templates
-      (let [template-menu-item (MenuItem. popup-menu SWT/CASCADE)
-            sub-menu (Menu. popup-menu)]
-        (doto template-menu-item
-          (.setText "Registered Templates")
-          (.setMenu sub-menu))
-        (register-menu-item [template-menu-item])
-        (register-menu-items (templates-get) sub-menu))
-      (MenuItem. popup-menu SWT/SEPARATOR)
-      ;exit
-      (let [menu-item (MenuItem. popup-menu SWT/PUSH)]
-        (.setText menu-item "Exit")
-        (register-menu-item [menu-item]
-                            (.close shell)))
-      (.setVisible popup-menu true))))
+    ;history
+    (register-menu-items (history-get) popup-menu)
+    (MenuItem. popup-menu SWT/SEPARATOR)
+    ;templates
+    (let [template-menu-item (MenuItem. popup-menu SWT/CASCADE)
+          sub-menu (Menu. popup-menu)]
+      (doto template-menu-item
+        (.setText "Registered Templates")
+        (.setMenu sub-menu))
+      (register-menu-item [template-menu-item])
+      (register-menu-items (templates-get) sub-menu))
+    (MenuItem. popup-menu SWT/SEPARATOR)
+    ;exit
+    (let [menu-item (MenuItem. popup-menu SWT/PUSH)]
+      (.setText menu-item "Exit")
+      (register-menu-item [menu-item]
+                          (.close shell)))
+    (.setVisible popup-menu true)
+    (info "display-menu end")
+    popup-menu))
 
 (defn tasktray-register []
+
   (let [display (Display.)
         shell (Shell. display)
         tray (.getSystemTray display)
         tray-item (TrayItem. tray SWT/NONE)]
+    ;listen server start
+    (start-server (fn [in out]
+                      (.syncExec display
+                                  (proxy [Runnable] []
+                                    (run []
+                                           (info "MessageBox")
+                                           (let [alert (MessageBox. shell SWT/YES)]
+                                             (.setMessage alert "Please push enter.")
+                                             (.open alert))
+                                           (info "MessageBox after")
+                                           (let [compo (Composite. shell SWT/BORDER)
+                                                 menu (do
+                                                        (display-menu shell))]
+                                             (.setMenu compo menu)
+                                             (.setVisible menu true)
+                                             (.setVisible compo true)
+                                             )
+                                         )))))
     (doto tray-item
       (.setToolTipText "clclcl")
       (.setImage (Image. display (get-icon-image-stream)))
       (.addListener SWT/Selection (proxy [Listener] []
-                                     (handleEvent [e]
-                                                  (display-menu shell))))
+                                    (handleEvent [e]
+                                                 (display-menu shell))))
       (.addListener SWT/MenuDetect (proxy [Listener] []
                                      (handleEvent [e]
                                                   (display-menu shell)))))
@@ -106,5 +126,6 @@
           (recur))))
     ; clean up.
     (info "clean up.")
+    (stop-server)
     (.dispose display)
     (.dispose shell)))

@@ -9,6 +9,7 @@
 
 (def *default-option-values* {:list-max 30
                               :watch-interval 3000
+                              :server-port 10000
                               :ignore-words []})
 
 (defn get-options []
