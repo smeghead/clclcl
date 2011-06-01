@@ -2,6 +2,7 @@
   (:gen-class)
   (:use clojure.contrib.logging clojure.test clclcl.options clclcl.database clclcl.clipboard clclcl.history clclcl.utils clclcl.templates clclcl.server)
   (:import 
+     (java.io PrintWriter)
      (org.eclipse.swt SWT)
      (org.eclipse.swt.widgets Event Display Tray TrayItem Shell Menu MenuItem Listener Composite MessageBox ToolTip)
      (org.eclipse.swt.graphics Device Image)
@@ -94,10 +95,18 @@
                       (.syncExec display
                                   (proxy [Runnable] []
                                     (run []
+                                         (.pack shell)
+                                         (let [shellRect (.getBounds shell)
+                                               dispRect (.getBounds display)]
+                                           (.setLocation shell
+                                                         (/ (- (.width dispRect) (.width shellRect)) 2))
+                                                         (/ (- (.height dispRect) (.height shellRect)) 2))
+                                         (.setVisible shell true)
                                            (info "MessageBox")
-                                           (let [alert (MessageBox. shell SWT/YES)]
+                                           (let [alert (MessageBox. shell (bit-or SWT/YES SWT/SYSTEM_MODAL))]
                                              (.setMessage alert "Please push enter.")
                                              (.open alert))
+                                         (.setVisible shell false)
                                            (info "MessageBox after")
                                            (let [compo (Composite. shell SWT/BORDER)
                                                  menu (do
@@ -106,7 +115,11 @@
                                              (.setVisible menu true)
                                              (.setVisible compo true)
                                              )
-                                         )))))
+                                         )))
+                    (let [*out* (PrintWriter. out)]
+                      (println "ok")
+                      (flush)
+                      (.close *out*))))
     (doto tray-item
       (.setToolTipText "clclcl")
       (.setImage (Image. display (get-icon-image-stream)))
