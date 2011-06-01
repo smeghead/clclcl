@@ -99,8 +99,8 @@
                                          (let [shellRect (.getBounds shell)
                                                dispRect (.getBounds display)]
                                            (.setLocation shell
-                                                         (/ (- (.width dispRect) (.width shellRect)) 2))
-                                                         (/ (- (.height dispRect) (.height shellRect)) 2))
+                                                         (/ (- (.width dispRect) (.width shellRect)) 2)
+                                                         (/ (- (.height dispRect) (.height shellRect)) 2)))
                                          (.setVisible shell true)
                                            (info "MessageBox")
                                            (let [alert (MessageBox. shell (bit-or SWT/YES SWT/SYSTEM_MODAL))]
