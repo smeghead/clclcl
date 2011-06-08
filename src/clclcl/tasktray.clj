@@ -60,9 +60,9 @@
 (defn display-menu [shell]
   (let [popup-menu (Menu. shell  SWT/POP_UP)]
     ;register keybind.
-;      (.addListener popup-menu SWT/KeyDown (proxy [Listener] []
-;                                                (handleEvent [e]
-;                                                            (info "pressed."))))
+      (.addListener shell SWT/KeyDown (proxy [Listener] []
+                                                (handleEvent [e]
+                                                            (info "pressed."))))
     ;history
     (register-menu-items (history-get) popup-menu)
     (MenuItem. popup-menu SWT/SEPARATOR)
@@ -84,6 +84,16 @@
     (info "display-menu end")
     popup-menu))
 
+;(defn key-bind [key mapto]
+;  (let [event (Event.)]
+;    (Thread/sleep 100)
+;    (set! (. event keyCode) (bit-or (Character/digit SWT/ALT 10) 121)) ; 121 is 'y'.
+;    (set! (. event type) SWT/KeyDown)
+;    (.post display event)
+;    (set! (. event type) SWT/KeyUp)
+;    (.post display event)
+;  )
+
 (defn tasktray-register []
 
   (let [display (Display.)
@@ -102,20 +112,16 @@
                                                          (/ (- (.width dispRect) (.width shellRect)) 2)
                                                          (/ (- (.height dispRect) (.height shellRect)) 2)))
                                          (.setVisible shell true)
-                                           (info "MessageBox")
-                                           (let [alert (MessageBox. shell (bit-or SWT/YES SWT/SYSTEM_MODAL))]
-                                             (.setMessage alert "Please push enter.")
-                                             (.open alert))
+                                         (let [alert (MessageBox. shell SWT/YES)]
+                                           (.setMessage alert "Please push enter.")
+                                           (.open alert))
                                          (.setVisible shell false)
-                                           (info "MessageBox after")
                                            (let [compo (Composite. shell SWT/BORDER)
                                                  menu (do
                                                         (display-menu shell))]
                                              (.setMenu compo menu)
                                              (.setVisible menu true)
-                                             (.setVisible compo true)
-                                             )
-                                         )))
+                                             (.setVisible compo true)))))
                     (let [*out* (PrintWriter. out)]
                       (println "ok")
                       (flush)

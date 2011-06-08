@@ -1,6 +1,12 @@
+2011-06-04  smeghead <smeghead7@gmail.com>
+
+	* fixed finalize process.
+	* added a server to catch a global hotkey.
+
 2011-05-29  smeghead <smeghead7@gmail.com>
 
 	* using swt.
+
 
 2011-05-19  smeghead <smeghead7@gmail.com>
 
