@@ -4,14 +4,20 @@
   (:import 
      (java.io PrintWriter)
      (org.eclipse.swt SWT)
-     (org.eclipse.swt.widgets Event Display Tray TrayItem Shell Menu MenuItem Listener Composite MessageBox ToolTip Tree TreeItem)
+     (org.eclipse.swt.widgets Event Display Tray TrayItem Shell Listener Composite MessageBox ToolTip Tree TreeItem)
      (org.eclipse.swt.graphics Device Image)
-     (org.eclipse.swt.events SelectionAdapter KeyListener)
+     (org.eclipse.swt.events SelectionAdapter KeyListener ShellAdapter)
      (javax.imageio ImageIO)))
 (impl-get-log (str *ns*))
 
 (defn get-icon-image-stream []
   (.getResourceAsStream (.getClass "") "/clclcl/clclcl.png"))
+
+(defn key-post [shell key map-to]
+  (let [event (Event.)]
+    (set! (. event keyCode) key)
+    (set! (. event type) map-to)
+    (.post (.getDisplay shell) event)))
 
 (defn format-entry-for-item [entry]
   (let [ent (-> entry
@@ -74,10 +80,45 @@
     (.addKeyListener tree (proxy [KeyListener] []
                             (keyPressed [e]
                                         (info (. e keyCode))
-                                        (case (. e keyCode)
-                                              ((SWT/CR)) (info "enter")
-                                              "default"))
-                            (keyReleased [e])))
+                                        (let [code (. e keyCode)
+                                              char (. e character)
+                                              item (aget (.getSelection tree) 0)]
+                                          (cond
+                                            (= char SWT/CR) (info "enter")
+                                            (= code SWT/ARROW_DOWN) (info "down")
+                                            (= code SWT/ARROW_UP) (info "up")
+                                            (= code 106) (do ; j
+                                                           (key-post shell SWT/ARROW_DOWN SWT/KeyDown)
+                                                           (set! (. e doit) false))
+                                            (= code 107) (do ; k
+                                                           (key-post shell SWT/ARROW_UP SWT/KeyDown)
+                                                           (set! (. e doit) false))
+                                            (= code 104) (do ; h
+                                                           (.setExpanded item false)
+                                                           (set! (. e doit) false))
+                                            (= code 108) (do ; l
+                                                           (.setExpanded item true)
+                                                           (set! (. e doit) false))
+                                            :else (set! (. e doit) false))))
+                            (keyReleased [e]
+                                        (let [code (. e keyCode)
+                                              char (. e character)
+                                              item (aget (.getSelection tree) 0)]
+                                          (cond
+                                            (= char SWT/CR) (info "enter")
+                                            (= code SWT/ARROW_DOWN) (info "down")
+                                            (= code SWT/ARROW_UP) (info "up")
+                                            (= code 106) (do ; j
+                                                           (key-post shell SWT/ARROW_DOWN SWT/KeyUp)
+                                                           (set! (. e doit) false))
+                                            (= code 107) (do ; k
+                                                           (key-post shell SWT/ARROW_UP SWT/KeyUp)
+                                                           (set! (. e doit) false))
+                                            (= code 104) (do ; h
+                                                           (set! (. e doit) false))
+                                            (= code 108) (do ; l
+                                                           (set! (. e doit) false))
+                                            :else (set! (. e doit) false))))))
 
     ;history
     (register-menu-items (history-get) tree)
@@ -92,21 +133,11 @@
 ;                          (.close shell)))
 ;    (.setVisible popup-menu true)
     (info "display-menu end")
-    (doto shell
-      (.pack)
-      (.open))
+    (.pack shell)
+    (.setSelection tree (aget (.getItems tree) 0)) ; select first element.
+    (.forceFocus tree)
     (show-center shell)
     shell))
-
-;(defn key-bind [key mapto]
-;  (let [event (Event.)]
-;    (Thread/sleep 100)
-;    (set! (. event keyCode) (bit-or (Character/digit SWT/ALT 10) 121)) ; 121 is 'y'.
-;    (set! (. event type) SWT/KeyDown)
-;    (.post display event)
-;    (set! (. event type) SWT/KeyUp)
-;    (.post display event)
-;  )
 
 (defn tasktray-register []
 
@@ -114,7 +145,12 @@
         shell (Shell. display)
         tray (.getSystemTray display)
         tray-item (TrayItem. tray SWT/NONE)]
-    (.setText shell "CLCLCL")
+    (doto shell
+      (.setText "CLCLCL")
+      (.addShellListener (proxy [ShellAdapter] []
+                           (shellClosed [e]
+                                        (.setVisible shell false)
+                                        (set! (. e doit) false)))))
     ;listen server start
     (start-server (fn [in out]
                       (.syncExec display
