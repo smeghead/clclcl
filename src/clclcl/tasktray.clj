@@ -4,9 +4,9 @@
   (:import 
      (java.io PrintWriter)
      (org.eclipse.swt SWT)
-     (org.eclipse.swt.widgets Event Display Tray TrayItem Shell Menu MenuItem Listener Composite MessageBox ToolTip)
+     (org.eclipse.swt.widgets Event Display Tray TrayItem Shell Menu MenuItem Listener Composite MessageBox ToolTip Tree TreeItem)
      (org.eclipse.swt.graphics Device Image)
-     (org.eclipse.swt.events SelectionAdapter)
+     (org.eclipse.swt.events SelectionAdapter KeyListener)
      (javax.imageio ImageIO)))
 (impl-get-log (str *ns*))
 
@@ -29,16 +29,23 @@
             (recur (rest chars) (+ cnt letter-count) (conj acc letter)))))
       ent)))
 
-(def *frame* (ref nil))
+(defn show-center [shell]
+  (let [shellRect (.getBounds shell)
+        dispRect (.. shell getDisplay getBounds)]
+    (.setLocation shell
+                  (/ (- (.width dispRect) (.width shellRect)) 2)
+                  (/ (- (.height dispRect) (.height shellRect)) 2)))
+  (.setVisible shell true))
 
-(defmacro register-menu-item [args & body]
-  (let [[menu-item] args
-        e (gensym)]
-    `(doto ~menu-item
-       (.addSelectionListener (proxy [SelectionAdapter] []
-                             (widgetSelected [~e] ~@body))))))
+;(defmacro register-menu-item [args & body]
+;  (let [[tree] args
+;        e (gensym)]
+;    `(doto ~tree
+;       ;.addSelectionListener
+;       (.addListener SWT/DefaultSelection (proxy [Listener] []
+;                                     (handleEvent [~e] ~@body))))))
 
-(defn register-menu-items [entries popup-menu]
+(defn register-menu-items [entries tree]
   (loop [items entries]
     (if-not (empty? items)
       (let [item (first items) 
@@ -47,42 +54,49 @@
                             :else {:name item :data item})
             name (loaded-item :name)
             data (loaded-item :data)
-            menu-item (MenuItem. popup-menu SWT/PUSH)]
-        (.setText menu-item (format-entry-for-item name))
+            ;menu-item (MenuItem. tree SWT/PUSH)]
+            ]
+        (let [item (TreeItem. tree SWT/NULL)]
+          (.setText item (format-entry-for-item name)))
 ;        (if-not (= (.getText menu-item) (str data))
 ;          (.setToolTipText menu-item (str data)))
-        (register-menu-item [menu-item]
-                            (clipboard-set (if (list? data)
-                                             ((eval data)) ;eval form was written in templates.clj
-                                             data)))
+;        (register-menu-item [tree]
+;                            (clipboard-set (if (list? data)
+;                                             ((eval data)) ;eval form was written in templates.clj
+;                                             data)))
         (recur (rest items))))))
 
 (defn display-menu [shell]
-  (let [popup-menu (Menu. shell  SWT/POP_UP)]
+  (let [tree (Tree. shell (bit-or SWT/BORDER SWT/V_SCROLL))
+        client-area (.getClientArea shell)]
+    (.setBounds tree (. client-area x) (. client-area y) 500 600)
     ;register keybind.
-      (.addListener shell SWT/KeyDown (proxy [Listener] []
-                                                (handleEvent [e]
-                                                            (info "pressed."))))
+    (.addKeyListener tree (proxy [KeyListener] []
+                            (keyPressed [e]
+                                        (info (. e keyCode))
+                                        (case (. e keyCode)
+                                              ((SWT/CR)) (info "enter")
+                                              "default"))
+                            (keyReleased [e])))
+
     ;history
-    (register-menu-items (history-get) popup-menu)
-    (MenuItem. popup-menu SWT/SEPARATOR)
+    (register-menu-items (history-get) tree)
     ;templates
-    (let [template-menu-item (MenuItem. popup-menu SWT/CASCADE)
-          sub-menu (Menu. popup-menu)]
-      (doto template-menu-item
-        (.setText "Registered Templates")
-        (.setMenu sub-menu))
-      (register-menu-item [template-menu-item])
-      (register-menu-items (templates-get) sub-menu))
-    (MenuItem. popup-menu SWT/SEPARATOR)
-    ;exit
-    (let [menu-item (MenuItem. popup-menu SWT/PUSH)]
-      (.setText menu-item "Exit")
-      (register-menu-item [menu-item]
-                          (.close shell)))
-    (.setVisible popup-menu true)
+    (let [template (TreeItem. tree SWT/NULL)]
+      (.setText template "Registered Templates")
+      (register-menu-items (templates-get) template))
+;    ;exit
+;    (let [menu-item (MenuItem. popup-menu SWT/PUSH)]
+;      (.setText menu-item "Exit")
+;      (register-menu-item [menu-item]
+;                          (.close shell)))
+;    (.setVisible popup-menu true)
     (info "display-menu end")
-    popup-menu))
+    (doto shell
+      (.pack)
+      (.open))
+    (show-center shell)
+    shell))
 
 ;(defn key-bind [key mapto]
 ;  (let [event (Event.)]
@@ -100,18 +114,14 @@
         shell (Shell. display)
         tray (.getSystemTray display)
         tray-item (TrayItem. tray SWT/NONE)]
+    (.setText shell "CLCLCL")
     ;listen server start
     (start-server (fn [in out]
                       (.syncExec display
                                   (proxy [Runnable] []
                                     (run []
                                          (.pack shell)
-                                         (let [shellRect (.getBounds shell)
-                                               dispRect (.getBounds display)]
-                                           (.setLocation shell
-                                                         (/ (- (.width dispRect) (.width shellRect)) 2)
-                                                         (/ (- (.height dispRect) (.height shellRect)) 2)))
-                                         (.setVisible shell true)
+                                         (show-center shell)
                                          (let [alert (MessageBox. shell SWT/YES)]
                                            (.setMessage alert "Please push enter.")
                                            (.open alert))
@@ -126,6 +136,7 @@
                       (println "ok")
                       (flush)
                       (.close *out*))))
+
     (doto tray-item
       (.setToolTipText "clclcl")
       (.setImage (Image. display (get-icon-image-stream)))

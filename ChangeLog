@@ -1,3 +1,7 @@
+2011-06-10  smeghead <smeghead7@gmail.com>
+
+	* Show clipboard history contents on Shell, not on context menu.
+
 2011-06-04  smeghead <smeghead7@gmail.com>
 
 	* fixed finalize process.
