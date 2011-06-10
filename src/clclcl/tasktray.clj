@@ -6,7 +6,7 @@
      (org.eclipse.swt SWT)
      (org.eclipse.swt.widgets Event Display Tray TrayItem Shell Listener Composite MessageBox ToolTip Tree TreeItem)
      (org.eclipse.swt.graphics Device Image)
-     (org.eclipse.swt.events SelectionAdapter KeyListener ShellAdapter)
+     (org.eclipse.swt.events KeyListener ShellAdapter MouseListener)
      (javax.imageio ImageIO)))
 (impl-get-log (str *ns*))
 
@@ -51,8 +51,9 @@
 ;       (.addListener SWT/DefaultSelection (proxy [Listener] []
 ;                                     (handleEvent [~e] ~@body))))))
 
-(defn register-menu-items [entries tree]
-  (loop [items entries]
+(defn register-menu-items [entries tree registerd-items]
+  (loop [items entries
+         acc registerd-items]
     (if-not (empty? items)
       (let [item (first items) 
             loaded-item (cond
@@ -60,22 +61,43 @@
                             :else {:name item :data item})
             name (loaded-item :name)
             data (loaded-item :data)
-            ;menu-item (MenuItem. tree SWT/PUSH)]
-            ]
-        (let [item (TreeItem. tree SWT/NULL)]
-          (.setText item (format-entry-for-item name)))
+            item (TreeItem. tree SWT/NULL)]
+        (.setText item (format-entry-for-item name))
 ;        (if-not (= (.getText menu-item) (str data))
 ;          (.setToolTipText menu-item (str data)))
 ;        (register-menu-item [tree]
 ;                            (clipboard-set (if (list? data)
 ;                                             ((eval data)) ;eval form was written in templates.clj
 ;                                             data)))
-        (recur (rest items))))))
+        (recur (rest items) (assoc acc (. item hashCode) (fn []
+                                                           (clipboard-set (if (list? data)
+                                                                            ((eval data)) ;eval form was written in templates.clj
+                                                                            data))))))
+        acc)))
+
+(def *registerd-items* (ref {}))
+
+(defn select-selection [shell item]
+  (let [fn (get @*registerd-items* (. item hashCode))]
+    (info fn)
+    (if-not (nil? fn)
+      (fn)); execute stored function
+    (info "enter")
+    (.setVisible shell false)))
 
 (defn display-menu [shell]
   (let [tree (Tree. shell (bit-or SWT/BORDER SWT/V_SCROLL))
         client-area (.getClientArea shell)]
     (.setBounds tree (. client-area x) (. client-area y) 500 600)
+
+    ;register mouse action.
+    (.addMouseListener tree (proxy [MouseListener] []
+                              (mouseDown [e])
+                              (mouseUp [e])
+                              (mouseDoubleClick [e]
+                                                (let [item (aget (.getSelection tree) 0)]
+                                                (select-selection shell item)))))
+
     ;register keybind.
     (.addKeyListener tree (proxy [KeyListener] []
                             (keyPressed [e]
@@ -84,7 +106,7 @@
                                               char (. e character)
                                               item (aget (.getSelection tree) 0)]
                                           (cond
-                                            (= char SWT/CR) (info "enter")
+                                            (= char SWT/CR) (select-selection shell item)
                                             (= code SWT/ARROW_DOWN) (info "down")
                                             (= code SWT/ARROW_UP) (info "up")
                                             (= code 106) (do ; j
@@ -101,37 +123,37 @@
                                                            (set! (. e doit) false))
                                             :else (set! (. e doit) false))))
                             (keyReleased [e]
-                                        (let [code (. e keyCode)
-                                              char (. e character)
-                                              item (aget (.getSelection tree) 0)]
-                                          (cond
-                                            (= char SWT/CR) (info "enter")
-                                            (= code SWT/ARROW_DOWN) (info "down")
-                                            (= code SWT/ARROW_UP) (info "up")
-                                            (= code 106) (do ; j
-                                                           (key-post shell SWT/ARROW_DOWN SWT/KeyUp)
-                                                           (set! (. e doit) false))
-                                            (= code 107) (do ; k
-                                                           (key-post shell SWT/ARROW_UP SWT/KeyUp)
-                                                           (set! (. e doit) false))
-                                            (= code 104) (do ; h
-                                                           (set! (. e doit) false))
-                                            (= code 108) (do ; l
-                                                           (set! (. e doit) false))
-                                            :else (set! (. e doit) false))))))
+                                         (let [code (. e keyCode)
+                                               char (. e character)
+                                               item (aget (.getSelection tree) 0)]
+                                           (cond
+                                             (= char SWT/CR) (info "enter")
+                                             (= code SWT/ARROW_DOWN) (info "down")
+                                             (= code SWT/ARROW_UP) (info "up")
+                                             (= code 106) (do ; j
+                                                            (key-post shell SWT/ARROW_DOWN SWT/KeyUp)
+                                                            (set! (. e doit) false))
+                                             (= code 107) (do ; k
+                                                            (key-post shell SWT/ARROW_UP SWT/KeyUp)
+                                                            (set! (. e doit) false))
+                                             (= code 104) (do ; h
+                                                            (set! (. e doit) false))
+                                             (= code 108) (do ; l
+                                                            (set! (. e doit) false))
+                                             :else (set! (. e doit) false))))))
 
     ;history
-    (register-menu-items (history-get) tree)
+    (dosync (ref-set *registerd-items* (register-menu-items (history-get) tree {})))
     ;templates
     (let [template (TreeItem. tree SWT/NULL)]
       (.setText template "Registered Templates")
-      (register-menu-items (templates-get) template))
-;    ;exit
-;    (let [menu-item (MenuItem. popup-menu SWT/PUSH)]
-;      (.setText menu-item "Exit")
-;      (register-menu-item [menu-item]
-;                          (.close shell)))
-;    (.setVisible popup-menu true)
+      (dosync (ref-set *registerd-items* (register-menu-items (templates-get) template @*registerd-items*))))
+    ;    ;exit
+    ;    (let [menu-item (MenuItem. popup-menu SWT/PUSH)]
+    ;      (.setText menu-item "Exit")
+    ;      (register-menu-item [menu-item]
+    ;                          (.close shell)))
+    ;    (.setVisible popup-menu true)
     (info "display-menu end")
     (.pack shell)
     (.setSelection tree (aget (.getItems tree) 0)) ; select first element.
