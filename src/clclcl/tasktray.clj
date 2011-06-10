@@ -85,9 +85,38 @@
     (info "enter")
     (.setVisible shell false)))
 
-(defn display-menu [shell]
-  (let [tree (Tree. shell (bit-or SWT/BORDER SWT/V_SCROLL))
+(defn display-menu [shell tree]
+  (.removeAll tree)
+  ;history
+  (dosync (ref-set *registerd-items* (register-menu-items (history-get) tree {})))
+  ;templates
+  (let [template (TreeItem. tree SWT/NULL)]
+    (.setText template "Registered Templates")
+    (dosync (ref-set *registerd-items* (register-menu-items (templates-get) template @*registerd-items*))))
+  ;    ;exit
+  ;    (let [menu-item (MenuItem. popup-menu SWT/PUSH)]
+  ;      (.setText menu-item "Exit")
+  ;      (register-menu-item [menu-item]
+  ;                          (.close shell)))
+  ;    (.setVisible popup-menu true)
+  (.pack shell)
+  (.setSelection tree (aget (.getItems tree) 0)) ; select first element.
+  (show-center shell)
+  shell)
+
+(defn tasktray-register []
+  (let [display (Display.)
+        shell (Shell. display)
+        tray (.getSystemTray display)
+        tray-item (TrayItem. tray SWT/NONE)
+        tree (Tree. shell (bit-or SWT/BORDER SWT/V_SCROLL))
         client-area (.getClientArea shell)]
+    (doto shell
+      (.setText "CLCLCL")
+      (.addShellListener (proxy [ShellAdapter] []
+                           (shellClosed [e]
+                                        (.setVisible shell false)
+                                        (set! (. e doit) false)))))
     (.setBounds tree (. client-area x) (. client-area y) 500 600)
 
     ;register mouse action.
@@ -96,7 +125,7 @@
                               (mouseUp [e])
                               (mouseDoubleClick [e]
                                                 (let [item (aget (.getSelection tree) 0)]
-                                                (select-selection shell item)))))
+                                                  (select-selection shell item)))))
 
     ;register keybind.
     (.addKeyListener tree (proxy [KeyListener] []
@@ -107,6 +136,9 @@
                                               item (aget (.getSelection tree) 0)]
                                           (cond
                                             (= char SWT/CR) (select-selection shell item)
+                                            (= char SWT/ESC) (do
+                                                               (.setVisible shell false)
+                                                               (set! (. e doit) false))
                                             (= code SWT/ARROW_DOWN) (info "down")
                                             (= code SWT/ARROW_UP) (info "up")
                                             (= code 106) (do ; j
@@ -142,54 +174,12 @@
                                                             (set! (. e doit) false))
                                              :else (set! (. e doit) false))))))
 
-    ;history
-    (dosync (ref-set *registerd-items* (register-menu-items (history-get) tree {})))
-    ;templates
-    (let [template (TreeItem. tree SWT/NULL)]
-      (.setText template "Registered Templates")
-      (dosync (ref-set *registerd-items* (register-menu-items (templates-get) template @*registerd-items*))))
-    ;    ;exit
-    ;    (let [menu-item (MenuItem. popup-menu SWT/PUSH)]
-    ;      (.setText menu-item "Exit")
-    ;      (register-menu-item [menu-item]
-    ;                          (.close shell)))
-    ;    (.setVisible popup-menu true)
-    (info "display-menu end")
-    (.pack shell)
-    (.setSelection tree (aget (.getItems tree) 0)) ; select first element.
-    (.forceFocus tree)
-    (show-center shell)
-    shell))
-
-(defn tasktray-register []
-
-  (let [display (Display.)
-        shell (Shell. display)
-        tray (.getSystemTray display)
-        tray-item (TrayItem. tray SWT/NONE)]
-    (doto shell
-      (.setText "CLCLCL")
-      (.addShellListener (proxy [ShellAdapter] []
-                           (shellClosed [e]
-                                        (.setVisible shell false)
-                                        (set! (. e doit) false)))))
     ;listen server start
     (start-server (fn [in out]
-                      (.syncExec display
-                                  (proxy [Runnable] []
-                                    (run []
-                                         (.pack shell)
-                                         (show-center shell)
-                                         (let [alert (MessageBox. shell SWT/YES)]
-                                           (.setMessage alert "Please push enter.")
-                                           (.open alert))
-                                         (.setVisible shell false)
-                                           (let [compo (Composite. shell SWT/BORDER)
-                                                 menu (do
-                                                        (display-menu shell))]
-                                             (.setMenu compo menu)
-                                             (.setVisible menu true)
-                                             (.setVisible compo true)))))
+                    (.syncExec display
+                               (proxy [Runnable] []
+                                 (run []
+                                      (display-menu shell tree))))
                     (let [*out* (PrintWriter. out)]
                       (println "ok")
                       (flush)
@@ -200,17 +190,17 @@
       (.setImage (Image. display (get-icon-image-stream)))
       (.addListener SWT/Selection (proxy [Listener] []
                                     (handleEvent [e]
-                                                 (display-menu shell))))
+                                                 (display-menu shell tree))))
       (.addListener SWT/MenuDetect (proxy [Listener] []
                                      (handleEvent [e]
-                                                  (display-menu shell)))))
+                                                  (display-menu shell tree)))))
 
     ; main event loop
     (loop []
       (if-not  (.isDisposed shell)
         (do
           (if (.readAndDispatch display)
-          (.sleep display))
+            (.sleep display))
           (recur))))
     ; clean up.
     (info "clean up.")
