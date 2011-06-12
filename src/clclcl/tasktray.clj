@@ -4,9 +4,9 @@
   (:import 
      (java.io PrintWriter)
      (org.eclipse.swt SWT)
-     (org.eclipse.swt.widgets Event Display Tray TrayItem Shell Listener Composite MessageBox ToolTip Tree TreeItem)
+     (org.eclipse.swt.widgets Event Display Tray TrayItem Shell Listener Composite MessageBox ToolTip Tree TreeItem Menu MenuItem)
      (org.eclipse.swt.graphics Device Image)
-     (org.eclipse.swt.events KeyListener ShellAdapter MouseListener)
+     (org.eclipse.swt.events KeyListener ShellAdapter MouseListener SelectionAdapter)
      (javax.imageio ImageIO)))
 (impl-get-log (str *ns*))
 
@@ -100,6 +100,8 @@
   (show-center shell tree)
   shell)
 
+(def *exit* false)
+
 (defn tasktray-register []
   (let [display (Display.)
         shell (Shell. display)
@@ -111,9 +113,25 @@
       (.setText "CLCLCL")
       (.addShellListener (proxy [ShellAdapter] []
                            (shellClosed [e]
-                                        (.setVisible shell false)
-                                        (set! (. e doit) false)))))
+                                        (if-not *exit*
+                                          (do
+                                            (.setVisible shell false)
+                                            (set! (. e doit) false)))))))
     (.setBounds tree (. client-area x) (. client-area y) 500 600)
+    ;create menu.
+    (let [parentMenu (Menu. shell SWT/BAR)
+          item (MenuItem. parentMenu SWT/CASCADE)
+          menu (Menu. item)
+          exit (MenuItem. menu SWT/PUSH)]
+      (.setMenuBar shell parentMenu)
+      (.setMenu item menu)
+      (.setText item "Main")
+      (doto exit
+        (.setText "Exit")
+        (.addSelectionListener (proxy [SelectionAdapter] []
+                                 (widgetSelected [e]
+                                                 (binding [*exit* true]
+                                                   (.close shell)))))))
 
     ;register mouse action.
     (.addMouseListener tree (proxy [MouseListener] []
