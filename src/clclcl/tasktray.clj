@@ -35,21 +35,17 @@
             (recur (rest chars) (+ cnt letter-count) (conj acc letter)))))
       ent)))
 
-(defn show-center [shell]
+(defn show-center [shell tree]
   (let [shellRect (.getBounds shell)
-        dispRect (.. shell getDisplay getBounds)]
+        display (.getDisplay shell)
+        dispRect (.getBounds display)]
+    (.asyncExec display (proxy [Runnable] []
+                          (run []
+                               (.setFocus tree))))
     (.setLocation shell
                   (/ (- (.width dispRect) (.width shellRect)) 2)
                   (/ (- (.height dispRect) (.height shellRect)) 2)))
   (.setVisible shell true))
-
-;(defmacro register-menu-item [args & body]
-;  (let [[tree] args
-;        e (gensym)]
-;    `(doto ~tree
-;       ;.addSelectionListener
-;       (.addListener SWT/DefaultSelection (proxy [Listener] []
-;                                     (handleEvent [~e] ~@body))))))
 
 (defn register-menu-items [entries tree registerd-items]
   (loop [items entries
@@ -101,7 +97,7 @@
   ;    (.setVisible popup-menu true)
   (.pack shell)
   (.setSelection tree (aget (.getItems tree) 0)) ; select first element.
-  (show-center shell)
+  (show-center shell tree)
   shell)
 
 (defn tasktray-register []
