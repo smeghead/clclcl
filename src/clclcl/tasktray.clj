@@ -77,9 +77,11 @@
   (let [fn (get @*registerd-items* (. item hashCode))]
     (info fn)
     (if-not (nil? fn)
-      (fn)); execute stored function
-    (info "enter")
-    (.setVisible shell false)))
+      (do
+        (fn)  ; execute stored function
+        (.setVisible shell false))
+      ; fn is null, trigger expanded.
+      (.setExpanded item (not (.getExpanded item))))))
 
 (defn display-menu [shell tree]
   (.removeAll tree)
@@ -89,12 +91,6 @@
   (let [template (TreeItem. tree SWT/NULL)]
     (.setText template "Registered Templates")
     (dosync (ref-set *registerd-items* (register-menu-items (templates-get) template @*registerd-items*))))
-  ;    ;exit
-  ;    (let [menu-item (MenuItem. popup-menu SWT/PUSH)]
-  ;      (.setText menu-item "Exit")
-  ;      (register-menu-item [menu-item]
-  ;                          (.close shell)))
-  ;    (.setVisible popup-menu true)
   (.pack shell)
   (.setSelection tree (aget (.getItems tree) 0)) ; select first element.
   (show-center shell tree)
@@ -111,6 +107,7 @@
         client-area (.getClientArea shell)]
     (doto shell
       (.setText "CLCLCL")
+      (.setImage (Image. display (get-icon-image-stream)))
       (.addShellListener (proxy [ShellAdapter] []
                            (shellClosed [e]
                                         (if-not *exit*
@@ -153,8 +150,14 @@
                                             (= char SWT/ESC) (do
                                                                (.setVisible shell false)
                                                                (set! (. e doit) false))
-                                            (= code SWT/ARROW_DOWN) (info "down")
-                                            (= code SWT/ARROW_UP) (info "up")
+                                            (= code SWT/ARROW_DOWN) nil
+                                            (= code SWT/ARROW_UP) nil
+                                            (= code SWT/ARROW_RIGHT) (do
+                                                                       (.setExpanded item true)
+                                                                       (set! (. e doit) false))
+                                            (= code SWT/ARROW_LEFT) (do
+                                                                      (.setExpanded item false)
+                                                                      (set! (. e doit) false))
                                             (= code 106) (do ; j
                                                            (key-post shell SWT/ARROW_DOWN SWT/KeyDown)
                                                            (set! (. e doit) false))
@@ -173,9 +176,11 @@
                                                char (. e character)
                                                item (aget (.getSelection tree) 0)]
                                            (cond
-                                             (= char SWT/CR) (info "enter")
-                                             (= code SWT/ARROW_DOWN) (info "down")
-                                             (= code SWT/ARROW_UP) (info "up")
+                                             (= char SWT/CR) nil
+                                             (= code SWT/ARROW_DOWN) nil
+                                             (= code SWT/ARROW_UP) nil
+                                             (= code SWT/ARROW_RIGHT) nil
+                                             (= code SWT/ARROW_LEFT) nil
                                              (= code 106) (do ; j
                                                             (key-post shell SWT/ARROW_DOWN SWT/KeyUp)
                                                             (set! (. e doit) false))
