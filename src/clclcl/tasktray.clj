@@ -39,13 +39,15 @@
   (let [shellRect (.getBounds shell)
         display (.getDisplay shell)
         dispRect (.getBounds display)]
-    (.asyncExec display (proxy [Runnable] []
-                          (run []
-                               (.setFocus tree))))
     (.setLocation shell
                   (/ (- (.width dispRect) (.width shellRect)) 2)
-                  (/ (- (.height dispRect) (.height shellRect)) 2)))
-  (.setVisible shell true))
+                  (/ (- (.height dispRect) (.height shellRect)) 2))
+    (.setVisible shell true)
+    ;TODO 2度目にホットキーでwindowを開いた時に、windowがフォーカスされない。
+    (.asyncExec display (proxy [Runnable] []
+                          (run []
+                               (info
+                               (.setFocus tree)))))))
 
 (defn register-menu-items [entries tree registerd-items]
   (loop [items entries
@@ -151,7 +153,11 @@
                                                                (.setVisible shell false)
                                                                (set! (. e doit) false))
                                             (= code SWT/ARROW_DOWN) nil
-                                            (= code SWT/ARROW_UP) nil
+                                            (= code SWT/ARROW_UP) (let [items (.getItems tree)
+                                                                        first-item (aget items 0)]
+                                                                    (info items)
+                                                                    (if (= item first-item)
+                                                                      (.setSelection tree (aget items (- (alength items) 1)))))
                                             (= code SWT/ARROW_RIGHT) (do
                                                                        (.setExpanded item true)
                                                                        (set! (. e doit) false))
