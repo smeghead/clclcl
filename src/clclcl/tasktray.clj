@@ -42,12 +42,12 @@
     (.setLocation shell
                   (/ (- (.width dispRect) (.width shellRect)) 2)
                   (/ (- (.height dispRect) (.height shellRect)) 2))
-    (.setVisible shell true)
+    (.open shell)
+    ;(.setVisible shell true)
     ;TODO 2度目にホットキーでwindowを開いた時に、windowがフォーカスされない。
     (.asyncExec display (proxy [Runnable] []
                           (run []
-                               (info
-                               (.setFocus tree)))))))
+                               (.setFocus tree))))))
 
 (defn register-menu-items [entries tree registerd-items]
   (loop [items entries
@@ -114,7 +114,8 @@
                            (shellClosed [e]
                                         (if-not *exit*
                                           (do
-                                            (.setVisible shell false)
+                                            (.close shell)
+                                            ;(.setVisible shell false)
                                             (set! (. e doit) false)))))))
     (.setBounds tree (. client-area x) (. client-area y) 500 600)
     ;create menu.
