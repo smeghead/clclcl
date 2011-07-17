@@ -47,7 +47,12 @@
     ;TODO 2度目にホットキーでwindowを開いた時に、windowがフォーカスされない。
     (.asyncExec display (proxy [Runnable] []
                           (run []
-                               (.setFocus tree))))))
+                               (info "setFocus")
+                               (info
+                                 (.setFocus shell))
+                               (info
+                                 (.setFocus tree))
+                               )))))
 
 (defn register-menu-items [entries tree registerd-items]
   (loop [items entries
@@ -114,8 +119,7 @@
                            (shellClosed [e]
                                         (if-not *exit*
                                           (do
-                                            (.close shell)
-                                            ;(.setVisible shell false)
+                                            (.setVisible shell false)
                                             (set! (. e doit) false)))))))
     (.setBounds tree (. client-area x) (. client-area y) 500 600)
     ;create menu.
