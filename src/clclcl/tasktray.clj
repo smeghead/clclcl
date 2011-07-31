@@ -86,7 +86,7 @@
     (if-not (nil? fn)
       (do
         (fn)  ; execute stored function
-        (.close shell false))
+        (.setVisible shell false))
       ; fn is null, trigger expanded.
       (.setExpanded item (not (.getExpanded item))))))
 
