@@ -47,11 +47,11 @@
     ;TODO 2度目にホットキーでwindowを開いた時に、windowがフォーカスされない。
     (.asyncExec display (proxy [Runnable] []
                           (run []
-                               (info "setFocus")
-                               (info
-                                 (.setFocus shell))
-                               (info
-                                 (.setFocus tree))
+                               (.setFocus shell)
+                               (.forceFocus shell)
+                               (Thread/sleep 100)
+                               (.setFocus tree)
+                               (.forceFocus tree)
                                )))))
 
 (defn register-menu-items [entries tree registerd-items]
@@ -86,41 +86,17 @@
     (if-not (nil? fn)
       (do
         (fn)  ; execute stored function
-        (.setVisible shell false))
+        (.close shell false))
       ; fn is null, trigger expanded.
       (.setExpanded item (not (.getExpanded item))))))
 
-(defn display-menu [shell tree]
-  (.removeAll tree)
-  ;history
-  (dosync (ref-set *registerd-items* (register-menu-items (history-get) tree {})))
-  ;templates
-  (let [template (TreeItem. tree SWT/NULL)]
-    (.setText template "Registered Templates")
-    (dosync (ref-set *registerd-items* (register-menu-items (templates-get) template @*registerd-items*))))
-  (.pack shell)
-  (.setSelection tree (aget (.getItems tree) 0)) ; select first element.
-  (show-center shell tree)
-  shell)
-
-(def *exit* false)
-
-(defn tasktray-register []
-  (let [display (Display.)
-        shell (Shell. display)
-        tray (.getSystemTray display)
-        tray-item (TrayItem. tray SWT/NONE)
+(defn create-shell-and-tree [display]
+  (let [shell (Shell. display)
         tree (Tree. shell (bit-or SWT/BORDER SWT/V_SCROLL))
         client-area (.getClientArea shell)]
     (doto shell
       (.setText "CLCLCL")
-      (.setImage (Image. display (get-icon-image-stream)))
-      (.addShellListener (proxy [ShellAdapter] []
-                           (shellClosed [e]
-                                        (if-not *exit*
-                                          (do
-                                            (.setVisible shell false)
-                                            (set! (. e doit) false)))))))
+      (.setImage (Image. display (get-icon-image-stream))))
     (.setBounds tree (. client-area x) (. client-area y) 500 600)
     ;create menu.
     (let [parentMenu (Menu. shell SWT/BAR)
@@ -134,8 +110,7 @@
         (.setText "Exit")
         (.addSelectionListener (proxy [SelectionAdapter] []
                                  (widgetSelected [e]
-                                                 (binding [*exit* true]
-                                                   (.close shell)))))))
+                                                   (.close shell))))))
 
     ;register mouse action.
     (.addMouseListener tree (proxy [MouseListener] []
@@ -203,13 +178,34 @@
                                              (= code 108) (do ; l
                                                             (set! (. e doit) false))
                                              :else (set! (. e doit) false))))))
+    [shell tree])
+  )
 
+(defn display-menu [display]
+  (let [[shell tree] (create-shell-and-tree display)]
+    (.removeAll tree)
+    ;history
+    (dosync (ref-set *registerd-items* (register-menu-items (history-get) tree {})))
+    ;templates
+    (let [template (TreeItem. tree SWT/NULL)]
+      (.setText template "Registered Templates")
+      (dosync (ref-set *registerd-items* (register-menu-items (templates-get) template @*registerd-items*))))
+    (.pack shell)
+    (.setSelection tree (aget (.getItems tree) 0)) ; select first element.
+    (show-center shell tree)
+    shell))
+
+(defn tasktray-register []
+  (let [display (Display.)
+        root-shell (Shell. display)
+        tray (.getSystemTray display)
+        tray-item (TrayItem. tray SWT/NONE)]
     ;listen server start
     (start-server (fn [in out]
                     (.syncExec display
                                (proxy [Runnable] []
                                  (run []
-                                      (display-menu shell tree))))
+                                      (display-menu display))))
                     (let [*out* (PrintWriter. out)]
                       (println "ok")
                       (flush)
@@ -220,14 +216,14 @@
       (.setImage (Image. display (get-icon-image-stream)))
       (.addListener SWT/Selection (proxy [Listener] []
                                     (handleEvent [e]
-                                                 (display-menu shell tree))))
+                                                 (display-menu display))))
       (.addListener SWT/MenuDetect (proxy [Listener] []
                                      (handleEvent [e]
-                                                  (display-menu shell tree)))))
+                                                  (display-menu display)))))
 
     ; main event loop
     (loop []
-      (if-not  (.isDisposed shell)
+      (if-not  (.isDisposed root-shell)
         (do
           (if (.readAndDispatch display)
             (.sleep display))
@@ -236,4 +232,6 @@
     (info "clean up.")
     (stop-server)
     (.dispose display)
-    (.dispose shell)))
+    ;(.dispose shell)
+    (.dispose root-shell)
+    ))

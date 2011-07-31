@@ -1,11 +1,7 @@
 (ns clclcl.watcher
   (:gen-class)
-  (:use clojure.contrib.logging clclcl.options clclcl.clipboard clclcl.history clclcl.tasktray clclcl.utils)
-  (:import (java.awt Toolkit)
-     (java.awt.datatransfer  FlavorListener)))
+  (:use clojure.contrib.logging clclcl.options clclcl.clipboard clclcl.history clclcl.tasktray clclcl.utils))
 (impl-get-log (str *ns*))
-
-(def *watcher-thread* (ref nil))
 
 (defn watcher-loop []
   (try
@@ -22,10 +18,8 @@
   (recur))
 
 (defn watcher-register []
-  (let [clip (.getSystemClipboard (Toolkit/getDefaultToolkit))]
-    (dosync (ref-set *watcher-thread* (proxy [Thread] []
-                                        (start [] (proxy-super start))
-                                        (run [] (watcher-loop)))))
-    (trace "watcher thread start.")
-    (.start @*watcher-thread*)))
+  (trace "watcher thread start.")
+  (.start (proxy [Thread] []
+            (start [] (proxy-super start))
+            (run [] (watcher-loop)))))
 
